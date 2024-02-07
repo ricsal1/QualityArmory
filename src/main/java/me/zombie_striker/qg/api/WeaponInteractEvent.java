@@ -17,6 +17,10 @@ public class WeaponInteractEvent extends Event {
         this.type = type;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public Gun getGun() {
         return g;
     }
@@ -30,10 +34,6 @@ public class WeaponInteractEvent extends Event {
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

@@ -6,7 +6,6 @@ import me.zombie_striker.qg.hooks.protection.implementation.ResidenceHook;
 import me.zombie_striker.qg.hooks.protection.implementation.TownyHook;
 import me.zombie_striker.qg.hooks.protection.implementation.WorldGuardHook;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import java.lang.reflect.Constructor;
@@ -20,18 +19,19 @@ public class ProtectionHandler {
     private final static Set<ProtectionHook> compatibilities = new HashSet<>();
 
     public static void init() {
-        Map<String,Class<? extends ProtectionHook>> classes = new HashMap<>();
+        Map<String, Class<? extends ProtectionHook>> classes = new HashMap<>();
         classes.put("WorldGuard", WorldGuardHook.class);
         classes.put("Towny", TownyHook.class);
         classes.put("Residence", ResidenceHook.class);
         classes.put("GriefPrevention", GriefPreventionHook.class);
 
-        for (Map.Entry<String,Class<? extends ProtectionHook>> entry : classes.entrySet()) {
+        for (Map.Entry<String, Class<? extends ProtectionHook>> entry : classes.entrySet()) {
             try {
                 Constructor<? extends ProtectionHook> constructor = entry.getValue().getConstructor();
 
                 hook(entry.getKey(), constructor::newInstance);
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
     }
 

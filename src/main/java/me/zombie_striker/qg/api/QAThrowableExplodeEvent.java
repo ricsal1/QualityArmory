@@ -18,6 +18,10 @@ public class QAThrowableExplodeEvent extends Event implements Cancellable {
         this.location = location;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public ThrowableItems getThrowable() {
         return throwable;
     }
@@ -37,10 +41,6 @@ public class QAThrowableExplodeEvent extends Event implements Cancellable {
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

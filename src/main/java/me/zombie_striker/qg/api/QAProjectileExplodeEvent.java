@@ -18,6 +18,10 @@ public class QAProjectileExplodeEvent extends Event implements Cancellable {
         this.location = location;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public RealtimeCalculationProjectile getProjectile() {
         return projectile;
     }
@@ -37,10 +41,6 @@ public class QAProjectileExplodeEvent extends Event implements Cancellable {
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

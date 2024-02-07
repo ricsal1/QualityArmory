@@ -4,46 +4,53 @@ import me.zombie_striker.qg.QAMain;
 import me.zombie_striker.qg.guns.Gun;
 import me.zombie_striker.qg.guns.utils.WeaponSounds;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class SlideReloader implements ReloadingHandler{
+public class SlideReloader implements ReloadingHandler {
 
 
-	public SlideReloader() {
-		ReloadingManager.add(this);
-	}
+    List<UUID> timeR = new ArrayList<>();
 
-	List<UUID> timeR = new ArrayList<>();
-	@Override
-	public boolean isReloading(Player player) {
-		return timeR.contains(player.getUniqueId());
-	}
+    public SlideReloader() {
+        ReloadingManager.add(this);
+    }
 
-	@Override
-	public double reload(Player player, Gun g, int amountReloading) {
-		timeR.add(player.getUniqueId());
-		player.getWorld().playSound(player.getLocation(), WeaponSounds.RELOAD_CLICK.getSoundName(), 1, 1f);
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-						player.getWorld().playSound(player.getLocation(), g.getReloadingSound(), 1, 1f);
-						timeR.remove(player.getUniqueId());
-				}
-			}.runTaskLater(QAMain.getInstance(), Math.max((int) ((g.getReloadTime()* 20.0) - 10.0),10));
-		return g.getReloadTime();
-	}
+    @Override
+    public boolean isReloading(Player player) {
+        return timeR.contains(player.getUniqueId());
+    }
 
-	@Override
-	public String getName() {
-		return ReloadingManager.SLIDE_RELOAD;
-	}
+    @Override
+    public double reload(Player player, Gun g, int amountReloading) {
+        timeR.add(player.getUniqueId());
+        player.getWorld().playSound(player.getLocation(), WeaponSounds.RELOAD_CLICK.getSoundName(), 1, 1f);
 
-	@Override
-	public String getDefaultReloadingSound() {
-		return WeaponSounds.RELOAD_MAG_CLICK.getSoundName();
-	}
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                player.getWorld().playSound(player.getLocation(), g.getReloadingSound(), 1, 1f);
+//                timeR.remove(player.getUniqueId());
+//            }
+//        }.runTaskLater(QAMain.getInstance(), Math.max((int) ((g.getReloadTime() * 20.0) - 10.0), 10));
+
+        QAMain.mybukkit.runTaskLater(player, null, null, () -> {
+            player.getWorld().playSound(player.getLocation(), g.getReloadingSound(), 1, 1f);
+            timeR.remove(player.getUniqueId());
+        }, Math.max((int) ((g.getReloadTime() * 20.0) - 10.0), 10));
+
+        return g.getReloadTime();
+    }
+
+    @Override
+    public String getName() {
+        return ReloadingManager.SLIDE_RELOAD;
+    }
+
+    @Override
+    public String getDefaultReloadingSound() {
+        return WeaponSounds.RELOAD_MAG_CLICK.getSoundName();
+    }
 }

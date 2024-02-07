@@ -49,6 +49,7 @@ public class MimicHookImpl implements BukkitItemsRegistry {
     public void register() {
         try {
             Mimic.getInstance().registerItemsRegistry(this, MimicApiLevel.CURRENT, QAMain.getInstance(), ServicePriority.Normal);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 }

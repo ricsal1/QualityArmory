@@ -1,53 +1,52 @@
 package me.zombie_striker.qg.api;
 
+import me.zombie_striker.qg.guns.Gun;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import me.zombie_striker.qg.guns.Gun;
-
 public class QAHeadShotEvent extends Event implements Cancellable {
-	private static final HandlerList handlers = new HandlerList();
-	private final Entity damaged;
-	private final Player player;
-	private final Gun g;
-	private boolean cancel = false;
+    private static final HandlerList handlers = new HandlerList();
+    private final Entity damaged;
+    private final Player player;
+    private final Gun g;
+    private boolean cancel = false;
 
-	public QAHeadShotEvent(Entity damaged, Player p, Gun g) {
-		this.player = p;
-		this.g = g;
-		this.damaged = damaged;
-	}
+    public QAHeadShotEvent(Entity damaged, Player p, Gun g) {
+        this.player = p;
+        this.g = g;
+        this.damaged = damaged;
+    }
 
-	public Gun getGun() {
-		return g;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
-	public Entity getDamagedEntity() {
-		return damaged;
-	}
+    public Gun getGun() {
+        return g;
+    }
 
-	public Player getShooter() {
-		return player;
-	}
+    public Entity getDamagedEntity() {
+        return damaged;
+    }
 
-	@Override
-	public boolean isCancelled() {
-		return cancel;
-	}
+    public Player getShooter() {
+        return player;
+    }
 
-	@Override
-	public void setCancelled(boolean canceled) {
-		this.cancel = canceled;
-	}
+    @Override
+    public boolean isCancelled() {
+        return cancel;
+    }
 
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    @Override
+    public void setCancelled(boolean canceled) {
+        this.cancel = canceled;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 }

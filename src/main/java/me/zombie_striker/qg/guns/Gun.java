@@ -35,6 +35,7 @@ import java.util.UUID;
 public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparable<Gun> {
 
     private static final String CALCTEXT = ChatColor.DARK_GRAY + "qadata:";
+    private final List<Material> breakableMaterials = new ArrayList<>();
     public ChatColor glowEffect = null;
     public boolean unlimitedAmmo = false;
     // This refers to the last time a gun was shot by a player, on a per-gun basis.
@@ -83,8 +84,6 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
     private boolean enableMuzzleSmoke = false;
     private double knockbackPower = 0;
     private int slownessPower = 0;
-    private final List<Material> breakableMaterials = new ArrayList<>();
-
     private String reloadingSound = WeaponSounds.RELOAD_MAG_OUT.getSoundName();
     private String chargingSound = WeaponSounds.RELOAD_BOLT.getSoundName();
 
@@ -544,12 +543,12 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
         return Gun.USE_THIS_INSTEAD_OF_INDEVIDUAL_SHOOT_METHODS(this, player, getSway(), holdingRMB);
     }
 
-    public void setDeathMessage(String deathMessage) {
-        this.killedByMessage = deathMessage;
-    }
-
     public String getDeathMessage() {
         return killedByMessage;
+    }
+
+    public void setDeathMessage(String deathMessage) {
+        this.killedByMessage = deathMessage;
     }
 
     public int getMaxBullets() {
@@ -601,13 +600,12 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
         return this.durib;
     }
 
+    public double getSwayUnscopedMultiplier() {
+        return swayUnscopedMultiplier;
+    }
 
     public void setSwayUnscopedMultiplier(double swaymultiplier) {
         this.swayUnscopedMultiplier = swaymultiplier;
-    }
-
-    public double getSwayUnscopedMultiplier() {
-        return swayUnscopedMultiplier;
     }
 
     public Ammo getAmmoType() {
@@ -853,7 +851,8 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
                 return true;
             }
             if (!isAutomatic() && GunUtil.rapidfireshooters.containsKey(player.getPlayer().getUniqueId())) {
-                GunUtil.rapidfireshooters.remove(player.getPlayer().getUniqueId()).cancel();
+                QAMain.mybukkit.cancelTask(GunUtil.rapidfireshooters.remove(player.getUniqueId()));
+
                 if (QAMain.enableReloadWhenOutOfAmmo) {
                     if (getAmount(player) <= 0) {
                         if (offhand) {
@@ -886,7 +885,7 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
                     QAMain.DEBUG("Out of ammo");
 
                     if (GunUtil.rapidfireshooters.containsKey(player.getUniqueId()))
-                        GunUtil.rapidfireshooters.remove(player.getUniqueId()).cancel();
+                        QAMain.mybukkit.cancelTask(GunUtil.rapidfireshooters.remove(player.getUniqueId()));
 
                     player.playSound(player.getLocation(), WeaponSounds.OUT_OF_AMMO_CLICK.getSoundName(), 1f, 1f);
 
@@ -1081,12 +1080,12 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
         this.enableSwayRunModifier = enableSwayRunModifier;
     }
 
-    public void setKnockbackPower(double power) {
-        this.knockbackPower = power;
-    }
-
     public double getKnockbackPower() {
         return knockbackPower;
+    }
+
+    public void setKnockbackPower(double power) {
+        this.knockbackPower = power;
     }
 
     public long getLastTimeRMB(Player player) {
@@ -1095,12 +1094,12 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
         return lastRMB.get(player.getUniqueId());
     }
 
-    public void setSlownessPower(int power) {
-        this.slownessPower = power;
-    }
-
     public int getSlownessPower() {
         return slownessPower;
+    }
+
+    public void setSlownessPower(int power) {
+        this.slownessPower = power;
     }
 
     public String getReloadingSound() {

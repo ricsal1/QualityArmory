@@ -1,60 +1,59 @@
 package me.zombie_striker.qg.miscitems;
 
+import me.zombie_striker.customitemmanager.ArmoryBaseObject;
+import org.bukkit.entity.Entity;
+
 import java.util.HashMap;
 import java.util.UUID;
 
-import org.bukkit.entity.Entity;
-import org.bukkit.scheduler.BukkitTask;
-
-import me.zombie_striker.customitemmanager.ArmoryBaseObject;
-
 public interface ThrowableItems extends ArmoryBaseObject {
 
-	HashMap<Entity, ThrowableHolder> throwItems = new HashMap<>();
-	
-	class ThrowableHolder {
-		private Entity holder;
-		private UUID owner;
-		private Grenade grenade;
+    HashMap<Entity, ThrowableHolder> throwItems = new HashMap<>();
 
-		private BukkitTask timer;
+    double getThrowSpeed();
 
-		public ThrowableHolder(UUID owner, Entity holder, Grenade grenade) {
-			this.holder = holder;
-			this.owner = owner;
-			this.grenade = grenade;
-		}
+    void setThrowSpeed(double throwspeed);
 
-		public void setHolder(Entity e) {
-			this.holder = e;
-		}
+    class ThrowableHolder {
+        private Entity holder;
+        private UUID owner;
+        private Grenade grenade;
 
-		public Entity getHolder() {
-			return holder;
-		}
+        private Object timer;
 
-		public void setTimer(BukkitTask bt) {
-			this.timer = bt;
-		}
+        public ThrowableHolder(UUID owner, Entity holder, Grenade grenade) {
+            this.holder = holder;
+            this.owner = owner;
+            this.grenade = grenade;
+        }
 
-		public BukkitTask getTask() {
-			return timer;
-		}
+        public Entity getHolder() {
+            return holder;
+        }
 
-		public UUID getOwner() {
-			return owner;
-		}
+        public void setHolder(Entity e) {
+            this.holder = e;
+        }
 
-		public Grenade getGrenade() {
-			return grenade;
-		}
+        public void setTimer(Object bt) {
+            this.timer = bt;
+        }
 
-		public void setGrenade(Grenade grenade) {
-			this.grenade = grenade;
-		}
-	}
+        public Object getTimer() {
+            return timer;
+        }
+
+        public UUID getOwner() {
+            return owner;
+        }
+
+        public Grenade getGrenade() {
+            return grenade;
+        }
 
 
-	double getThrowSpeed();
-	void setThrowSpeed(double throwspeed);
+        public void setGrenade(Grenade grenade) {
+            this.grenade = grenade;
+        }
+    }
 }

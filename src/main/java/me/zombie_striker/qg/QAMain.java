@@ -42,6 +42,7 @@ import me.zombie_striker.qg.npcs.Gunner;
 import me.zombie_striker.qg.npcs.GunnerTrait;
 import me.zombie_striker.qg.npcs_sentinel.SentinelQAHandler;
 import me.zombie_striker.qg.utils.LocalUtils;
+import me.zombie_striker.qg.utils.MyBukkit;
 import org.bukkit.*;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
@@ -71,18 +72,13 @@ import java.util.stream.Collectors;
 
 public class QAMain extends JavaPlugin {
 
-    private static String changelog = null;
-
     public static final int ViaVersionIdfor_1_8 = 106;
     private static final String SERVER_VERSION;
     public static HashMap<MaterialStorage, Gun> gunRegister = new LinkedHashMap<>();
     public static HashMap<MaterialStorage, Ammo> ammoRegister = new LinkedHashMap<>();
     public static HashMap<MaterialStorage, CustomBaseObject> miscRegister = new LinkedHashMap<>();
     public static HashMap<MaterialStorage, ArmorObject> armorRegister = new LinkedHashMap<>();
-
-
     public static HashMap<String, String> craftingEntityNames = new HashMap<>();
-
     public static Set<EntityType> avoidTypes = new HashSet<>();
     public static HashMap<UUID, Location> recoilHelperMovedLocation = new HashMap<>();
     public static ArrayList<MaterialStorage> expansionPacks = new ArrayList<>();
@@ -97,12 +93,10 @@ public class QAMain extends JavaPlugin {
     public static boolean enableInteractChests = false;
     public static boolean DEBUG = false;
     public static Object bulletTrail;
-
     public static boolean shouldSend = true;
     public static boolean sendOnJoin = false;
     public static boolean sendTitleOnJoin = false;
     public static double secondsTilSend = 0.0;
-
     public static boolean orderShopByPrice = false;
     public static boolean ignoreUnbreaking = false;
     public static boolean ignoreSkipping = false;
@@ -154,12 +148,9 @@ public class QAMain extends JavaPlugin {
     public static boolean kickIfDeniedRequest = false;
     public static boolean showAmmoInXPBar = false;
     public static boolean perWeaponPermission = false;
-
     public static boolean allowGunHitEntities = false;
     public static boolean anticheatFix = false;
-
     public static String S_NOPERM = "&c You do not have permission to do that.";
-
     public static String S_RELOAD = " Guns and configs have been reloaded.";
     public static String S_NORES1 = " &c&l Downloading Resourcepack...";
     public static String S_NORES2 = " &f Accept the resourcepack to see the custom items";
@@ -173,11 +164,9 @@ public class QAMain extends JavaPlugin {
     public static String S_ITEM_VARIANTS_NEW = "&7Varient:";
     public static String S_ITEM_DPS = "&2DPS";
     public static String S_ITEM_COST = "&" + ChatColor.GOLD.getChar() + "Price: ";
-
     // Chris: add message
     public static String S_ITEM_CRAFTS = "Crafts";
     public static String S_ITEM_RETURNS = "Returns";
-
     public static String S_KICKED_FOR_RESOURCEPACK = "&c You have been kicked because you did not accept the resourcepack. \n&f If you want to rejoin the server, edit the server entry and set \"Resourcepack Prompts\" to \"Accept\" or \"Prompt\"'";
     public static String S_LMB_SINGLE = ChatColor.DARK_GRAY + "[LMB] to use Single-fire mode";
     public static String S_LMB_FULLAUTO = ChatColor.DARK_GRAY + "[Sneak]+[LMB] to use Automatic-fire";
@@ -225,7 +214,6 @@ public class QAMain extends JavaPlugin {
     public static String S_prevPage = "&6Previous Page:";
     public static String bagAmmo = "&aAmmo: ";
     public static String bagAmmoType = "&aAmmo Type: ";
-
     public static ItemStack prevButton;
     public static ItemStack nextButton;
     public static MessagesYML m;
@@ -252,7 +240,10 @@ public class QAMain extends JavaPlugin {
     public static boolean blockBreakTexture = false;
     public static boolean autoarm = false;
     public static List<UUID> currentlyScoping = new ArrayList<>();
+    private static String changelog = null;
     private static QAMain main;
+
+    public static MyBukkit mybukkit;
 
     static {
         String name = Bukkit.getServer().getClass().getName();
@@ -665,6 +656,8 @@ public class QAMain extends JavaPlugin {
             this.getDataFolder().mkdirs();
         }
 
+        mybukkit = new MyBukkit(this);
+
         MinecraftVersion.replaceLogger(this.getLogger());
         MinecraftVersion.disableUpdateCheck();
 
@@ -701,13 +694,19 @@ public class QAMain extends JavaPlugin {
 
         DEBUG(ChatColor.RED + "NOTICE ME");
         reloadVals();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player player : Bukkit.getOnlinePlayers())
-                    resourcepackReq.add(player.getUniqueId());
-            }
-        }.runTaskLater(this, 1);
+
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                for (Player player : Bukkit.getOnlinePlayers())
+//                    resourcepackReq.add(player.getUniqueId());
+//            }
+//        }.runTaskLater(this, 1);
+
+        QAMain.mybukkit.runTaskLater(null, null, null, () -> {
+                    for (Player player : Bukkit.getOnlinePlayers())
+                        resourcepackReq.add(player.getUniqueId());
+                },1);
 
         // check if Citizens is present and enabled.
 
@@ -753,12 +752,58 @@ public class QAMain extends JavaPlugin {
         metrics.addCustomChart(
                 new Metrics.SimplePie("has_an_expansion_pack", () -> (expansionPacks.size() > 0) + ""));
         if (!CustomItemManager.isUsingCustomData()) {
-            new BukkitRunnable() {
-                @SuppressWarnings("deprecation")
-                public void run() {
-                    try {
-                        // Cheaty, hacky fix
-                        for (Player p : Bukkit.getOnlinePlayers()) {
+
+//            new BukkitRunnable() {
+//                @SuppressWarnings("deprecation")
+//                public void run() {
+//                    try {
+//                        // Cheaty, hacky fix
+//                        for (Player p : Bukkit.getOnlinePlayers()) {
+//                            // if (p.getItemInHand().containsEnchantment(Enchantment.MENDING)) {
+//                            if (p.getItemInHand() != null && p.getItemInHand().hasItemMeta())
+//                                if (QualityArmory.isCustomItem(p.getItemInHand())) {
+//                                    if (ITEM_enableUnbreakable && (!p.getItemInHand().getItemMeta().isUnbreakable()
+//                                            && !ignoreUnbreaking)) {
+//                                        ItemStack temp = p.getItemInHand();
+//                                        int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+//                                        temp.setDurability((short) Math.max(0, j - 1));
+//                                        temp = Gun.removeCalculatedExtra(temp);
+//                                        p.setItemInHand(temp);
+//                                    }
+//                                }
+//                            try {
+//
+//                                // if
+//                                // (p.getInventory().getItemInOffHand().containsEnchantment(Enchantment.MENDING))
+//                                // {
+//                                if (p.getInventory().getItemInOffHand() != null
+//                                        && p.getInventory().getItemInOffHand().hasItemMeta())
+//                                    if (QualityArmory.isCustomItem(p.getInventory().getItemInOffHand())) {
+//                                        if (ITEM_enableUnbreakable && (!p.getInventory().getItemInOffHand().getItemMeta()
+//                                                .isUnbreakable() && !ignoreUnbreaking)) {
+//                                            ItemStack temp = p.getInventory().getItemInOffHand();
+//                                            int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+//                                            temp.setDurability((short) Math.max(0, j - 1));
+//                                            temp = Gun.removeCalculatedExtra(temp);
+//                                            p.getInventory().setItemInOffHand(temp);
+//                                            return;
+//                                        }
+//                                    }
+//                            } catch (Error | Exception e45) {
+//                            }
+//                        }
+//                    } catch (Error | Exception catchy) {
+//
+//                    }
+//                }
+//            }.runTaskTimer(this, 20, 15);
+
+            QAMain.mybukkit.runTaskTimer(null, null, null, () -> {
+                try {
+                    // Cheaty, hacky fix
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+
+                        QAMain.mybukkit.runTask(p, null, null, () -> {
                             // if (p.getItemInHand().containsEnchantment(Enchantment.MENDING)) {
                             if (p.getItemInHand() != null && p.getItemInHand().hasItemMeta())
                                 if (QualityArmory.isCustomItem(p.getItemInHand())) {
@@ -791,12 +836,13 @@ public class QAMain extends JavaPlugin {
                                     }
                             } catch (Error | Exception e45) {
                             }
-                        }
-                    } catch (Error | Exception catchy) {
+                        });
 
                     }
+                } catch (Error | Exception catchy) {
+
                 }
-            }.runTaskTimer(this, 20, 15);
+            }, 20, 15);
         }
     }
 

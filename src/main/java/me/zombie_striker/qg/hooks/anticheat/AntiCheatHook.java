@@ -10,12 +10,20 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-
 public abstract class AntiCheatHook implements Listener {
 
     public AntiCheatHook() {
         Bukkit.getPluginManager().registerEvents(this, QAMain.getInstance());
+    }
+
+    public static void registerHook(String name, @NotNull Class<? extends AntiCheatHook> hook) {
+        if (Bukkit.getPluginManager().isPluginEnabled(name)) {
+            try {
+                AntiCheatHook aHook = hook.getConstructor().newInstance();
+                QAMain.getInstance().getLogger().info("Found " + aHook.getName() + " AntiCheat. Loaded support");
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
     public abstract String getName();
@@ -24,18 +32,9 @@ public abstract class AntiCheatHook implements Listener {
         Gun gun = QualityArmory.getGunInHand(player);
         if (gun == null) return;
 
-        if (GunUtil.isDelay(gun,player)) {
+        if (GunUtil.isDelay(gun, player)) {
             cancellable.setCancelled(true);
             QAMain.DEBUG("Cancelled " + this.getName() + " violation because player is using gun.");
-        }
-    }
-
-    public static void registerHook(String name, @NotNull Class<? extends AntiCheatHook> hook) {
-        if (Bukkit.getPluginManager().isPluginEnabled(name)) {
-            try {
-                AntiCheatHook aHook = hook.getConstructor().newInstance();
-                QAMain.getInstance().getLogger().info("Found " + aHook.getName() + " AntiCheat. Loaded support");
-            } catch (Throwable ignored) {}
         }
     }
 }

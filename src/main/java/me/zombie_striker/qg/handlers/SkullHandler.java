@@ -1,16 +1,15 @@
 package me.zombie_striker.qg.handlers;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
 import java.lang.reflect.Method;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.UUID;
-
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
 
 public class SkullHandler {
     private static final Method GET_NAME;
@@ -38,8 +37,7 @@ public class SkullHandler {
     /**
      * Return a skull that has a custom texture specified by url.
      *
-     * @param url
-     *            skin url
+     * @param url skin url
      * @return itemstack
      */
     public static ItemStack getCustomSkull(String url) {
@@ -50,8 +48,7 @@ public class SkullHandler {
     /**
      * Return a skull that has a custom texture specified by url.
      *
-     * @param url
-     *            skin url
+     * @param url skin url
      * @return itemstack
      */
     @SuppressWarnings("deprecation")
@@ -114,7 +111,8 @@ public class SkullHandler {
                     return (String) GET_VALUE.invoke(p);
                 }
             }
-        } catch (Exception | Error ignored) {}
+        } catch (Exception | Error ignored) {
+        }
 
         return null;
     }

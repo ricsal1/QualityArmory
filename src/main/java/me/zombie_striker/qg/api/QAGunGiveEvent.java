@@ -9,14 +9,18 @@ import org.jetbrains.annotations.NotNull;
 
 public class QAGunGiveEvent extends PlayerEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
-    private boolean cancel = false;
     private final Cause cause;
+    private boolean cancel = false;
     private Gun gun;
 
     public QAGunGiveEvent(@NotNull Player who, Gun gun, Cause cause) {
         super(who);
         this.gun = gun;
         this.cause = cause;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     public Cause getCause() {
@@ -43,10 +47,6 @@ public class QAGunGiveEvent extends PlayerEvent implements Cancellable {
 
     @NotNull
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

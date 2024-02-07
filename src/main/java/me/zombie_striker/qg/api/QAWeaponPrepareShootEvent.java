@@ -1,46 +1,45 @@
 package me.zombie_striker.qg.api;
 
+import me.zombie_striker.qg.guns.Gun;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import me.zombie_striker.qg.guns.Gun;
-
 public class QAWeaponPrepareShootEvent extends Event implements Cancellable {
-	private static final HandlerList handlers = new HandlerList();
-	private final Player player;
-	private final Gun g;
-	private boolean cancel = false;
+    private static final HandlerList handlers = new HandlerList();
+    private final Player player;
+    private final Gun g;
+    private boolean cancel = false;
 
-	public QAWeaponPrepareShootEvent(Player p, Gun g) {
-		this.player = p;
-		this.g = g;
-	}
+    public QAWeaponPrepareShootEvent(Player p, Gun g) {
+        this.player = p;
+        this.g = g;
+    }
 
-	public Gun getGun() {
-		return g;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
-	public Player getPlayer() {
-		return player;
-	}
+    public Gun getGun() {
+        return g;
+    }
 
-	@Override
-	public boolean isCancelled() {
-		return cancel;
-	}
+    public Player getPlayer() {
+        return player;
+    }
 
-	@Override
-	public void setCancelled(boolean canceled) {
-		this.cancel = canceled;
-	}
+    @Override
+    public boolean isCancelled() {
+        return cancel;
+    }
 
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    @Override
+    public void setCancelled(boolean canceled) {
+        this.cancel = canceled;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 }

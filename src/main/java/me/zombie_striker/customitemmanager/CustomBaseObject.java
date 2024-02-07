@@ -8,132 +8,136 @@ import java.util.UUID;
 
 public class CustomBaseObject {
 
-	private final UUID uuid = UUID.randomUUID();
-	private String name;
-	private MaterialStorage base;
-	private List<String> lore;
-	private String displayname;
-	private boolean customAnimations;
+    private final UUID uuid = UUID.randomUUID();
+    public int maxItemStack = 1;
+    Object[] ing = null;
+    int craftingReturn = 1;
+    private String name;
+    private MaterialStorage base;
+    private List<String> lore;
+    private String displayname;
+    private boolean customAnimations;
+    private String soundOnEquip;
+    private String soundOnHit;
+    private double price;
+    private boolean enableShop = true;
+    private boolean enableCrafting = true;
 
-	private String soundOnEquip;
-	private String soundOnHit;
+    public CustomBaseObject(String name, MaterialStorage storage, String displayname, List<String> lore, boolean hasAimAnimations) {
+        this.name = name;
+        this.base = storage;
+        this.displayname = displayname;
+        this.lore = lore;
+        this.customAnimations = hasAimAnimations;
+    }
 
-	private double price;
-	private boolean enableShop = true;
-	private boolean enableCrafting = true;
+    public String getName() {
+        return name;
+    }
 
-	Object[] ing = null;
-	int craftingReturn = 1;
+    public MaterialStorage getItemData() {
+        return base;
+    }
 
-	public int maxItemStack = 1;
+    public List<String> getCustomLore() {
+        if (lore == null) return new ArrayList<>();
+        return new ArrayList<>(lore);
+    }
 
-	public CustomBaseObject(String name, MaterialStorage storage, String displayname, List<String> lore, boolean hasAimAnimations) {
-		this.name = name;
-		this.base = storage;
-		this.displayname = displayname;
-		this.lore = lore;
-		this.customAnimations = hasAimAnimations;
-	}
+    public void setCustomLore(List<String> lore) {
+        this.lore = lore;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getDisplayName() {
+        return displayname;
+    }
 
-	public MaterialStorage getItemData() {
-		return base;
-	}
+    public void setDisplayname(String displayname) {
+        this.displayname = displayname;
+    }
 
-	public List<String> getCustomLore() {
-		if(lore==null) return new ArrayList<>();
-		return new ArrayList<>(lore);
-	}
+    public void enableBetterAimingAnimations(boolean b) {
+        this.customAnimations = b;
+    }
 
-	public void setCustomLore(List<String> lore) {
-		this.lore = lore;
-	}
+    boolean hasBetterAimingAnimations() {
+        return this.customAnimations;
+    }
 
-	public String getDisplayName() {
-		return displayname;
-	}
+    public String getSoundOnEquip() {
+        return soundOnEquip;
+    }
 
-	public void setDisplayname(String displayname) {this.displayname = displayname;
-	}
+    public void setSoundOnEquip(String sound) {
+        this.soundOnEquip = sound;
+    }
 
-	public void enableBetterAimingAnimations(boolean b) {
-		this.customAnimations = b;
-	}
+    public String getSoundOnHit() {
+        return soundOnHit;
+    }
 
-	boolean hasBetterAimingAnimations() {
-		return this.customAnimations;
-	}
+    public void setSoundOnHit(String sound) {
+        this.soundOnHit = sound;
+    }
 
-	public String getSoundOnEquip() {
-		return soundOnEquip;
-	}
+    public double getPrice() {
+        return price;
+    }
 
-	public String getSoundOnHit() {
-		return soundOnHit;
-	}
+    public void setPrice(double price) {
+        this.price = price;
+    }
 
-	public void setSoundOnHit(String sound) {
-		this.soundOnHit = sound;
-	}
+    public boolean isEnableShop() {
+        return enableShop;
+    }
 
-	public void setSoundOnEquip(String sound) {
-		this.soundOnEquip = sound;
-	}
+    public void setEnableShop(boolean enableShop) {
+        this.enableShop = enableShop;
+    }
 
-	public double getPrice() {
-		return price;
-	}
+    public boolean isEnableCrafting() {
+        return enableCrafting;
+    }
 
-	public void setPrice(double price) {
-		this.price = price;
-	}
+    public void setEnableCrafting(boolean enableCrafting) {
+        this.enableCrafting = enableCrafting;
+    }
 
-	public boolean isEnableShop() {
-		return enableShop;
-	}
+    @Deprecated
+    public ItemStack[] getIngredients() {
+        return (ItemStack[]) ing;
+    }
 
-	public boolean isEnableCrafting() {
-		return enableCrafting;
-	}
+    public void setIngredients(ItemStack[] ing) {
+        this.ing = ing;
+    }
 
-	public void setEnableShop(boolean enableShop) {
-		this.enableShop = enableShop;
-	}
+    public Object[] getIngredientsRaw() {
+        return ing;
+    }
 
-	public void setEnableCrafting(boolean enableCrafting) {
-		this.enableCrafting = enableCrafting;
-	}
+    public void setIngredientsRaw(Object[] ing) {
+        this.ing = ing;
+    }
 
-	public void setIngredients(ItemStack[] ing) {
-		this.ing = ing;
-	}
-	public void setIngredientsRaw(Object[] ing) {
-		this.ing = ing;
-	}
-	@Deprecated
-	public ItemStack[] getIngredients(){
-		return (ItemStack[]) ing;
-	}
-	public Object[] getIngredientsRaw(){
-		return ing;
-	}
-	public int getCraftingReturn(){
-		return craftingReturn;
-	}
-	public void setCraftingReturn(int amount){
-		this.craftingReturn = amount;
-	}
-	public int getMaxItemStack(){
-		return maxItemStack;
-	}
-	public void setMaxItemStack(int amount){
-		maxItemStack = amount;
-	}
+    public int getCraftingReturn() {
+        return craftingReturn;
+    }
 
-	public UUID getUuid() {
-		return uuid;
-	}
+    public void setCraftingReturn(int amount) {
+        this.craftingReturn = amount;
+    }
+
+    public int getMaxItemStack() {
+        return maxItemStack;
+    }
+
+    public void setMaxItemStack(int amount) {
+        maxItemStack = amount;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
 }
