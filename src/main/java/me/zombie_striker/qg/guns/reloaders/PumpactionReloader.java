@@ -64,12 +64,11 @@ public class PumpactionReloader implements ReloadingHandler {
 //                }
 //            }.runTaskLater(QAMain.getInstance(), (int) (time * i * 20));
 
-            AtomicInteger temp = new AtomicInteger();
 
             QAMain.mybukkit.runTaskLater(player, null, null, () -> {
-                 temp.set(player.getInventory().getHeldItemSlot());
+                int temp = player.getInventory().getHeldItemSlot();
 
-                if (player.getInventory().getHeldItemSlot() != temp.get())
+                if (player.getInventory().getHeldItemSlot() != temp)
                     return;
                 QualityArmory.sendHotbarGunAmmoCount(player, g, player.getInventory().getItemInMainHand(), true, g.getMaxBullets() - amountReloading + finalI, g.getMaxBullets());
 

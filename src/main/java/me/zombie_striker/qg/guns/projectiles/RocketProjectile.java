@@ -14,59 +14,106 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RocketProjectile implements RealtimeCalculationProjectile {
     public RocketProjectile() {
         ProjectileManager.add(this);
     }
 
+    Object task;
+
     @Override
     public void spawn(final Gun g, final Location s, final Player player, final Vector dir) {
-        new BukkitRunnable() {
-            int distance = g.getMaxDistance();
 
-            @Override
-            public void run() {
-                for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
-                    distance--;
-                    s.add(dir);
-                    ParticleHandlers.spawnGunParticles(g, s);
-                    boolean entityNear = false;
+//        new BukkitRunnable() {
+//            int distance = g.getMaxDistance();
+//
+//            @Override
+//            public void run() {
+//                for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
+//                    distance--;
+//                    s.add(dir);
+//                    ParticleHandlers.spawnGunParticles(g, s);
+//                    boolean entityNear = false;
+//                    try {
+//                        List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
+//                        for (Entity e : e2) {
+//                            if (e != player
+//                                    && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
+//                                entityNear = true;
+//                        }
+//                    } catch (Error e) {
+//                    }
+//
+//                    final Location explode = s.clone();
+//                    if (GunUtil.isSolid(explode.getBlock(), explode) || entityNear || distance < 0) {
+//                        boolean explodeDamage = false;
+//
+//                        if (QAMain.enableExplosionDamage) {
+//                            QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(RocketProjectile.this, explode);
+//                            Bukkit.getPluginManager().callEvent(event);
+//                            if (!event.isCancelled()) explodeDamage = ExplosionHandler.handleExplosion(explode, 4, 2);
+//                        }
+//                        try {
+//                            //player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 0.9f);
+//                            player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
+//                            s.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, s, 0);
+//
+//                        } catch (Error e3) {
+//                            s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
+//                            player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
+//                        }
+//                        ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
+//                        cancel();
+//                        return;
+//                    }
+//                }
+//            }
+//        }.runTaskTimer(QAMain.getInstance(), 0, 1);
+
+
+        task = QAMain.mybukkit.runTaskTimer(player, null, null, () -> {
+            AtomicInteger distance = new AtomicInteger(g.getMaxDistance());
+
+            for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
+                distance.getAndDecrement();
+                s.add(dir);
+                ParticleHandlers.spawnGunParticles(g, s);
+                boolean entityNear = false;
+                try {
+                    List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
+                    for (Entity e : e2) {
+                        if (e != player && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
+                            entityNear = true;
+                    }
+                } catch (Error e) {
+                }
+
+                final Location explode = s.clone();
+                if (GunUtil.isSolid(explode.getBlock(), explode) || entityNear || distance.get() < 0) {
+                    boolean explodeDamage = false;
+
+                    if (QAMain.enableExplosionDamage) {
+                        QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(RocketProjectile.this, explode);
+                        Bukkit.getPluginManager().callEvent(event);
+                        if (!event.isCancelled()) explodeDamage = ExplosionHandler.handleExplosion(explode, 4, 2);
+                    }
                     try {
-                        List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
-                        for (Entity e : e2) {
-                            if (e != player
-                                    && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
-                                entityNear = true;
-                        }
-                    } catch (Error e) {
+                        //player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 0.9f);
+                        player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
+                        s.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, s, 0);
+
+                    } catch (Error e3) {
+                        s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
+                        player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
                     }
-
-                    final Location explode = s.clone();
-                    if (GunUtil.isSolid(explode.getBlock(), explode) || entityNear || distance < 0) {
-                        boolean explodeDamage = false;
-
-                        if (QAMain.enableExplosionDamage) {
-                            QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(RocketProjectile.this, explode);
-                            Bukkit.getPluginManager().callEvent(event);
-                            if (!event.isCancelled()) explodeDamage = ExplosionHandler.handleExplosion(explode, 4, 2);
-                        }
-                        try {
-                            //player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 0.9f);
-                            player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
-                            s.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, s, 0);
-
-                        } catch (Error e3) {
-                            s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
-                            player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
-                        }
-                        ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
-                        cancel();
-                        return;
-                    }
+                    ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
+                    QAMain.mybukkit.cancelTask(task);
+                    return;
                 }
             }
-        }.runTaskTimer(QAMain.getInstance(), 0, 1);
+        }, 0, 1);
     }
 
     @Override

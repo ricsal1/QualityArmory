@@ -55,9 +55,9 @@ public class SingleBulletReloader implements ReloadingHandler {
 //                }
 //            }.runTaskLater(QAMain.getInstance(), (int) (time * i * 20));
 
-            AtomicInteger temp = new AtomicInteger();
-
             QAMain.mybukkit.runTaskLater(player, null, null, () -> {
+                AtomicInteger temp = new AtomicInteger();
+
                 temp.set(player.getInventory().getHeldItemSlot());
 
                 if (player.getInventory().getHeldItemSlot() != temp.get())

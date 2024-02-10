@@ -12,59 +12,102 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExplodingRoundProjectile implements RealtimeCalculationProjectile {
     public ExplodingRoundProjectile() {
         ProjectileManager.add(this);
     }
+Object task;
 
     @Override
     public void spawn(final Gun g, final Location s, final Player player, final Vector dir) {
-        new BukkitRunnable() {
-            int distance = g.getMaxDistance();
 
-            @Override
-            public void run() {
-                dir.setY(dir.getY() - QAMain.gravity);
-                for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
-                    distance--;
-                    s.add(dir);
-                    ParticleHandlers.spawnGunParticles(g, s);
-                    boolean entityNear = false;
+//
+//        new BukkitRunnable() {
+//            int distance = g.getMaxDistance();
+//
+//            @Override
+//            public void run() {
+//                dir.setY(dir.getY() - QAMain.gravity);
+//                for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
+//                    distance--;
+//                    s.add(dir);
+//                    ParticleHandlers.spawnGunParticles(g, s);
+//                    boolean entityNear = false;
+//                    try {
+//                        List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
+//                        for (Entity e : e2) {
+//                            if (e != player && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
+//                                entityNear = true;
+//                        }
+//                    } catch (Error e) {
+//                    }
+//
+//                    if (GunUtil.isSolid(s.getBlock(), s) || entityNear || distance < 0) {
+//                        ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
+//                        ParticleHandlers.spawnExplosion(s);
+//                        try {
+//                            player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 1.5f);
+//                            player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
+//                        } catch (Error e3) {
+//                            s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
+//                            try {
+//                                player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
+//                            } catch (Error e333) {
+//                                player.getWorld().playSound(s, Sound.valueOf("ENTITY_GENERIC_EXPLODE"), 8, 0.7f);
+//                            }
+//                        }
+//                        cancel();
+//                        return;
+//                    }
+//                }
+//            }
+//        }.runTaskTimer(QAMain.getInstance(), 0, 1);
+
+        AtomicInteger distance = new AtomicInteger();
+
+      task =  QAMain.mybukkit.runTaskTimer(player, null, null, () -> {
+            distance.set(g.getMaxDistance());
+
+            dir.setY(dir.getY() - QAMain.gravity);
+            for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
+                distance.getAndDecrement();
+                s.add(dir);
+                ParticleHandlers.spawnGunParticles(g, s);
+                boolean entityNear = false;
+                try {
+                    List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
+                    for (Entity e : e2) {
+                        if (e != player && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
+                            entityNear = true;
+                    }
+                } catch (Error e) {
+                }
+
+                if (GunUtil.isSolid(s.getBlock(), s) || entityNear || distance.get() < 0) {
+                    ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
+                    ParticleHandlers.spawnExplosion(s);
                     try {
-                        List<Entity> e2 = new ArrayList<>(s.getWorld().getNearbyEntities(s, 1, 1, 1));
-                        for (Entity e : e2) {
-                            if (e != player && (!(e instanceof Player) || ((Player) e).getGameMode() != GameMode.SPECTATOR))
-                                entityNear = true;
-                        }
-                    } catch (Error e) {
-                    }
-
-                    if (GunUtil.isSolid(s.getBlock(), s) || entityNear || distance < 0) {
-                        ExplosionHandler.handleAOEExplosion(player, s, g.getDamage(), g.getExplosionRadius());
-                        ParticleHandlers.spawnExplosion(s);
+                        player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 1.5f);
+                        player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
+                    } catch (Error e3) {
+                        s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
                         try {
-                            player.getWorld().playSound(s, WeaponSounds.WARHEAD_EXPLODE.getSoundName(), 10, 1.5f);
-                            player.getWorld().playSound(s, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
-                        } catch (Error e3) {
-                            s.getWorld().playEffect(s, Effect.valueOf("CLOUD"), 0);
-                            try {
-                                player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
-                            } catch (Error e333) {
-                                player.getWorld().playSound(s, Sound.valueOf("ENTITY_GENERIC_EXPLODE"), 8, 0.7f);
-                            }
+                            player.getWorld().playSound(s, Sound.valueOf("EXPLODE"), 8, 0.7f);
+                        } catch (Error e333) {
+                            player.getWorld().playSound(s, Sound.valueOf("ENTITY_GENERIC_EXPLODE"), 8, 0.7f);
                         }
-                        cancel();
-                        return;
                     }
+                    QAMain.mybukkit.cancelTask(task);
+                    return;
                 }
             }
-        }.runTaskTimer(QAMain.getInstance(), 0, 1);
+        }, 0, 1);
     }
 
     @Override
