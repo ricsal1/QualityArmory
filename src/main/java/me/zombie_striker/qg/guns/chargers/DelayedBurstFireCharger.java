@@ -102,18 +102,15 @@ public class DelayedBurstFireCharger implements ChargingHandler {
         AtomicInteger slotUsed = new AtomicInteger();
         @SuppressWarnings("deprecation")
         AtomicBoolean offhand = new AtomicBoolean(false);
-        AtomicInteger shotCurrently = new AtomicInteger();
-        shotCurrently.set(1);
-
+        AtomicInteger shotCurrently = new AtomicInteger(1);
         AtomicInteger currentRate = new AtomicInteger();
         AtomicInteger skippedTicks = new AtomicInteger();
-        skippedTicks.set(0);
+
+        slotUsed.set(player.getInventory().getHeldItemSlot());
+        offhand.set(QualityArmory.isIronSights(player.getItemInHand()));
+        currentRate.set((int) (10 / g.getFireRate() / Math.pow(2, g.getBulletsPerShot())));
 
         shooters.put(player.getUniqueId(), QAMain.mybukkit.runTaskTimer(player, null, null, () -> {
-
-            slotUsed.set(player.getInventory().getHeldItemSlot());
-            offhand.set(QualityArmory.isIronSights(player.getItemInHand()));
-            currentRate.set((int) (10 / g.getFireRate() / Math.pow(2, g.getBulletsPerShot())));
 
             if (skippedTicks.get() >= currentRate.get()) {
                 skippedTicks.set(0);

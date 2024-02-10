@@ -84,6 +84,7 @@ public class BulletWoundHandler {
 //            }.runTaskTimer(QAMain.getInstance(), 0, 20);
 
             task = QAMain.mybukkit.runTaskTimer(null, null, null, () -> {
+
                 for (Entry<UUID, Double> e : bleedoutMultiplier.entrySet()) {
                     Player online = Bukkit.getPlayer(e.getKey());
                     if (online != null) {

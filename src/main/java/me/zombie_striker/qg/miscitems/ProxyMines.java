@@ -17,6 +17,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ProxyMines extends Grenade {
 
@@ -114,29 +116,29 @@ public class ProxyMines extends Grenade {
 //            }
 //        }.runTaskTimer(QAMain.getInstance(), 5, 1));
 
+        AtomicInteger k = new AtomicInteger();
+        AtomicReference<BlockFace> sticky = null;
+
         h.setTimer(QAMain.mybukkit.runTaskTimer(null, null, h.getHolder(), () -> {
 
-            int k = 0;
-            BlockFace sticky = null;
-
-            if (sticky == null) {
+            if (sticky.get() == null) {
                 if (h.getHolder().getLocation().add(0.3, 0, 0).getBlock().getType().isSolid()) {
-                    sticky = BlockFace.EAST;
+                    sticky.set(BlockFace.EAST);
                 } else if (h.getHolder().getLocation().add(-0.3, 0, 0).getBlock().getType().isSolid()) {
-                    sticky = BlockFace.WEST;
+                    sticky.set(BlockFace.WEST);
                 } else if (h.getHolder().getLocation().add(0, 0, 0.3).getBlock().getType().isSolid()) {
-                    sticky = BlockFace.SOUTH;
+                    sticky.set(BlockFace.SOUTH);
                 } else if (h.getHolder().getLocation().add(0, 0, -0.3).getBlock().getType().isSolid()) {
-                    sticky = BlockFace.NORTH;
+                    sticky.set(BlockFace.NORTH);
                 }
             }
-            if (sticky != null) {
+            if (sticky.get() != null) {
                 h.getHolder().setVelocity(new Vector(0, 0.0, 0));
             }
             if (!(h.getHolder() instanceof Player)) {
-                k++;
+                k.getAndIncrement();
             }
-            if (k >= 20) {
+            if (k.get() >= 20) {
                 boolean det = false;
                 for (Entity e : h.getHolder().getNearbyEntities(radius, radius, radius)) {
                     if (e instanceof Player) {

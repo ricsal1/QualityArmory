@@ -22,11 +22,11 @@ public class AimManager extends BukkitRunnable implements Listener {
     private static final Map<UUID, Long> LAST_MOVEMENT = new HashMap<>();
 
     public AimManager() {
-    //    this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
+        //    this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
 
         QAMain.mybukkit.runTaskTimer(null, null, null, () -> {
             QAMain.getInstance();
-        },10,10);
+        }, 10, 10);
     }
 
     public static double getSway(Gun gun, UUID uuid) {

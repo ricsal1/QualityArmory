@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MiniNukeProjectile implements RealtimeCalculationProjectile {
+    Object task;
+
     public MiniNukeProjectile() {
         ProjectileManager.add(this);
     }
-
-    Object task;
 
     @Override
     public void spawn(final Gun g, final Location s, final Player player, final Vector dir) {
@@ -91,14 +91,13 @@ public class MiniNukeProjectile implements RealtimeCalculationProjectile {
 //        }.runTaskTimer(QAMain.getInstance(), 0, 1);
 //
 
+        AtomicInteger distance = new AtomicInteger(g.getMaxDistance());
 
         task = QAMain.mybukkit.runTaskTimer(null, null, null, () -> {
 
-            int distance = g.getMaxDistance();
-
             dir.setY(dir.getY() - QAMain.gravity);
             for (int tick = 0; tick < Math.round(0.99 + g.getVelocityForRealtimeCalculations()); tick++) {
-                distance--;
+                distance.getAndDecrement();
                 s.add(dir);
                 ParticleHandlers.spawnGunParticles(g, s);
                 try {
@@ -117,7 +116,7 @@ public class MiniNukeProjectile implements RealtimeCalculationProjectile {
                 } catch (Error e) {
                 }
 
-                if (GunUtil.isSolid(s.getBlock(), s) || entityNear || distance < 0) {
+                if (GunUtil.isSolid(s.getBlock(), s) || entityNear || distance.get() < 0) {
                     if (QAMain.enableExplosionDamage) {
                         QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(MiniNukeProjectile.this, s);
                         Bukkit.getPluginManager().callEvent(event);

@@ -35,12 +35,12 @@ public interface ThrowableItems extends ArmoryBaseObject {
             this.holder = e;
         }
 
-        public void setTimer(Object bt) {
-            this.timer = bt;
-        }
-
         public Object getTimer() {
             return timer;
+        }
+
+        public void setTimer(Object bt) {
+            this.timer = bt;
         }
 
         public UUID getOwner() {

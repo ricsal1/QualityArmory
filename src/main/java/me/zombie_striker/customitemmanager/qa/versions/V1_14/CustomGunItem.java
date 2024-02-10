@@ -1,7 +1,9 @@
 package me.zombie_striker.customitemmanager.qa.versions.V1_14;
 
-import com.cryptomorin.xseries.XMaterial;
-import me.zombie_striker.customitemmanager.*;
+import me.zombie_striker.customitemmanager.CustomBaseObject;
+import me.zombie_striker.customitemmanager.CustomItemManager;
+import me.zombie_striker.customitemmanager.MaterialStorage;
+import me.zombie_striker.customitemmanager.OLD_ItemFact;
 import me.zombie_striker.customitemmanager.qa.AbstractCustomGunItem;
 import me.zombie_striker.qg.QAMain;
 import me.zombie_striker.qg.ammo.Ammo;
@@ -9,13 +11,13 @@ import me.zombie_striker.qg.api.QualityArmory;
 import me.zombie_striker.qg.armor.ArmorObject;
 import me.zombie_striker.qg.config.GunYMLCreator;
 import me.zombie_striker.qg.guns.Gun;
+import me.zombie_striker.qg.guns.chargers.ChargingManager;
 import me.zombie_striker.qg.guns.projectiles.ProjectileManager;
+import me.zombie_striker.qg.guns.reloaders.ReloadingManager;
 import me.zombie_striker.qg.guns.utils.WeaponSounds;
 import me.zombie_striker.qg.guns.utils.WeaponType;
 import me.zombie_striker.qg.handlers.IronsightsHandler;
 import me.zombie_striker.qg.handlers.MultiVersionLookup;
-import me.zombie_striker.qg.guns.chargers.ChargingManager;
-import me.zombie_striker.qg.guns.reloaders.ReloadingManager;
 import me.zombie_striker.qg.handlers.SkullHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,7 +31,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class CustomGunItem extends AbstractCustomGunItem {
 

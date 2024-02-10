@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class HomingRocketProjectile implements RealtimeCalculationProjectile {
+    Object task;
+
     public HomingRocketProjectile() {
         ProjectileManager.add(this);
     }
-
-    Object task;
 
     @Override
     public void spawn(final Gun g, final Location starting, final Player player, final Vector dir) {
@@ -93,12 +93,11 @@ public class HomingRocketProjectile implements RealtimeCalculationProjectile {
 //            }
 //        }.runTaskTimer(QAMain.getInstance(), 0, 1);
 
+        Location RPGLOCATION = starting.clone();
+        final AtomicInteger[] distance = {new AtomicInteger(g.getMaxDistance())};
+        final Vector[] vect = {dir};
 
         task = QAMain.mybukkit.runTaskTimer(player, null, null, () -> {
-
-            Location RPGLOCATION = starting.clone();
-            final AtomicInteger[] distance = {new AtomicInteger(g.getMaxDistance())};
-            final Vector[] vect = {dir};
 
             for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
                 distance[0].getAndDecrement();

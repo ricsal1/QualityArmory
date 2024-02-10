@@ -1,12 +1,15 @@
 package me.zombie_striker.qg;
 
-import java.io.*;
-import java.net.*;
-
-import com.google.gson.*;
-import org.bukkit.*;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
 
 public class GithubUpdater {
 
@@ -138,7 +141,7 @@ public class GithubUpdater {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                },1);
+                }, 1);
 
 
                 return true;

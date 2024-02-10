@@ -6,7 +6,6 @@ import me.zombie_striker.qg.guns.utils.WeaponSounds;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;

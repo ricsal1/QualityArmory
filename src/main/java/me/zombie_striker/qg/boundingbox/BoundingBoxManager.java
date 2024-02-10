@@ -1,11 +1,11 @@
 package me.zombie_striker.qg.boundingbox;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import me.zombie_striker.qg.handlers.MultiVersionLookup;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 public class BoundingBoxManager {
 

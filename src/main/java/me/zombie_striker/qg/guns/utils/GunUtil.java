@@ -526,6 +526,8 @@ public class GunUtil {
                 addRecoil(player, g);
         }
 
+        QAMain.DEBUG("--> automatica " + g.isAutomatic());
+
         if (g.isAutomatic()) {
 
 //            rapidfireshooters.put(player.getUniqueId(), new BukkitRunnable() {

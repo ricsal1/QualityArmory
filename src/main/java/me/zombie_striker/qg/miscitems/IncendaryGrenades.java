@@ -1,8 +1,8 @@
 package me.zombie_striker.qg.miscitems;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import me.zombie_striker.customitemmanager.MaterialStorage;
+import me.zombie_striker.qg.QAMain;
+import me.zombie_striker.qg.guns.utils.WeaponSounds;
 import me.zombie_striker.qg.hooks.protection.ProtectionHandler;
 import org.bukkit.Effect;
 import org.bukkit.Sound;
@@ -12,9 +12,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import me.zombie_striker.qg.QAMain;
-import me.zombie_striker.customitemmanager.MaterialStorage;
-import me.zombie_striker.qg.guns.utils.WeaponSounds;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IncendaryGrenades extends Grenade {
 
@@ -86,55 +85,54 @@ public class IncendaryGrenades extends Grenade {
 //        }.runTaskTimer(QAMain.getInstance(), 5 * 20, 10));
 
         AtomicInteger k = new AtomicInteger();
-        k.set(0);
 
         h.setTimer(QAMain.mybukkit.runTaskTimer(null, h.getHolder().getLocation(), null, () -> {
 
-                    try {
-                        h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE,
-                                h.getHolder().getLocation(), 0);
-                        for (int i = 0; i < 4; i++) {
-                            //TODO: Check: This goes in three directions, and one stays still
-                            h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.LAVA,
-                                    h.getHolder().getLocation(), i);
-                        }
-                        h.getHolder().getWorld().playSound(h.getHolder().getLocation(), WeaponSounds.HISS.getSoundName(), 2f,
-                                1f);
-                    } catch (Error e3) {
-                        h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
-                        h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
-                    }
-                    k.getAndIncrement();
-                    QAMain.DEBUG("Fireticks");
-                    if (k.get() == 1) {
-                        if (h.getHolder() instanceof Player) {
-                            ((LivingEntity) h.getHolder()).setFireTicks(h.getHolder().getMaxFireTicks() / 5);
-                            removeGrenade(((Player) h.getHolder()));
-                        }
-                    } else if (k.get() == 40) {
-                        if (h.getHolder() instanceof Item) {
-                            Grenade.getGrenades().remove(h.getHolder());
-                            h.getHolder().remove();
-                        }
-                        throwItems.remove(h.getHolder());
+            try {
+                h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE,
+                        h.getHolder().getLocation(), 0);
+                for (int i = 0; i < 4; i++) {
+                    //TODO: Check: This goes in three directions, and one stays still
+                    h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.LAVA,
+                            h.getHolder().getLocation(), i);
+                }
+                h.getHolder().getWorld().playSound(h.getHolder().getLocation(), WeaponSounds.HISS.getSoundName(), 2f,
+                        1f);
+            } catch (Error e3) {
+                h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
+                h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
+            }
+            k.getAndIncrement();
+            QAMain.DEBUG("Fireticks");
+            if (k.get() == 1) {
+                if (h.getHolder() instanceof Player) {
+                    ((LivingEntity) h.getHolder()).setFireTicks(h.getHolder().getMaxFireTicks() / 5);
+                    removeGrenade(((Player) h.getHolder()));
+                }
+            } else if (k.get() == 40) {
+                if (h.getHolder() instanceof Item) {
+                    Grenade.getGrenades().remove(h.getHolder());
+                    h.getHolder().remove();
+                }
+                throwItems.remove(h.getHolder());
 
-                        QAMain.mybukkit.cancelTask(h.getTimer());
+                QAMain.mybukkit.cancelTask(h.getTimer());
 
-                    } else {
-                        for (Entity ei : h.getHolder().getNearbyEntities(radius, radius, radius))
-                            if (e instanceof LivingEntity) {
-                                QAMain.DEBUG("Firedamage to " + ei.getName());
-                                try {
-                                    if (ProtectionHandler.canPvp(ei.getLocation())) {
-                                        ei.setFireTicks(20);
-                                    }
-                                } catch (Error error) {
-                                    ei.setFireTicks(20);
-                                }
+            } else {
+                for (Entity ei : h.getHolder().getNearbyEntities(radius, radius, radius))
+                    if (e instanceof LivingEntity) {
+                        QAMain.DEBUG("Firedamage to " + ei.getName());
+                        try {
+                            if (ProtectionHandler.canPvp(ei.getLocation())) {
+                                ei.setFireTicks(20);
                             }
+                        } catch (Error error) {
+                            ei.setFireTicks(20);
+                        }
                     }
+            }
 
-                },5 * 20, 10));
+        }, 5 * 20, 10));
 
         throwItems.put(thrower, h);
 

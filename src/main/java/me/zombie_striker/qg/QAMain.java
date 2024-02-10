@@ -60,7 +60,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -240,10 +239,9 @@ public class QAMain extends JavaPlugin {
     public static boolean blockBreakTexture = false;
     public static boolean autoarm = false;
     public static List<UUID> currentlyScoping = new ArrayList<>();
+    public static MyBukkit mybukkit;
     private static String changelog = null;
     private static QAMain main;
-
-    public static MyBukkit mybukkit;
 
     static {
         String name = Bukkit.getServer().getClass().getName();
@@ -704,9 +702,9 @@ public class QAMain extends JavaPlugin {
 //        }.runTaskLater(this, 1);
 
         QAMain.mybukkit.runTaskLater(null, null, null, () -> {
-                    for (Player player : Bukkit.getOnlinePlayers())
-                        resourcepackReq.add(player.getUniqueId());
-                },1);
+            for (Player player : Bukkit.getOnlinePlayers())
+                resourcepackReq.add(player.getUniqueId());
+        }, 1);
 
         // check if Citizens is present and enabled.
 

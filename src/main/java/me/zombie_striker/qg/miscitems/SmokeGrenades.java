@@ -85,7 +85,7 @@ public class SmokeGrenades extends Grenade {
 
         AtomicInteger k = new AtomicInteger();
 
-        h.setTimer(QAMain.mybukkit.runTaskTimer((Player)h.getHolder(), null, null, () -> {
+        h.setTimer(QAMain.mybukkit.runTaskTimer((Player) h.getHolder(), null, null, () -> {
 
             try {
                 h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE,

@@ -8,7 +8,6 @@ import me.zombie_striker.qg.guns.utils.WeaponSounds;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -94,11 +93,10 @@ public class BurstFireCharger implements ChargingHandler {
 
         AtomicInteger slotUsed = new AtomicInteger();
         AtomicBoolean offhand = new AtomicBoolean(false);
-        AtomicInteger shotCurrently = new AtomicInteger();
+        AtomicInteger shotCurrently = new AtomicInteger(1);
 
         slotUsed.set(player.getInventory().getHeldItemSlot());
         offhand.set(QualityArmory.isIronSights(player.getItemInHand()));
-        shotCurrently.set(1);
 
         shooters.put(player.getUniqueId(), QAMain.mybukkit.runTaskTimer(player, null, null, () -> {
 
@@ -148,7 +146,7 @@ public class BurstFireCharger implements ChargingHandler {
             }
             QualityArmory.sendHotbarGunAmmoCount(player, g, stack, false);
 
-        }, (long)10 / g.getFireRate(), (long)10 / g.getFireRate()));
+        }, (long) 10 / g.getFireRate(), (long) 10 / g.getFireRate()));
 
         return false;
     }

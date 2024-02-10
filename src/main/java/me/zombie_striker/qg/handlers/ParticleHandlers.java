@@ -8,7 +8,6 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
 public class ParticleHandlers {
