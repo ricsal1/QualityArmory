@@ -1070,7 +1070,7 @@ public class QAListener implements Listener {
 
                         QAMain.mybukkit.runTaskLater(e.getPlayer(), null, null, () -> {
                             QualityArmory.sendResourcepack(e.getPlayer(), false);
-                        }, 0);
+                        }, 1);
                     }
                     break;
                 }

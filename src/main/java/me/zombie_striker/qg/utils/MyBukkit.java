@@ -18,8 +18,15 @@ public class MyBukkit {
 
     public MyBukkit(QAMain main) {
         this.main = main;
+
         String version = Bukkit.getVersion().toUpperCase();
         folia = (version.contains("-FOLIA-"));
+
+        //server type name
+        if (!folia) {
+            String minecraftVersion2 = Bukkit.getServer().getName();
+            folia = (minecraftVersion2.toUpperCase().contains("FOLIA"));
+        }
     }
 
 
@@ -36,6 +43,9 @@ public class MyBukkit {
 
 
     public Object runTaskLater(Player player, Location local, Entity entity, Runnable myrun, long delay) {
+        if (delay == 0)
+            delay = 1;
+
         if (folia) {
             if (player != null) return player.getScheduler().runDelayed(main, st -> myrun.run(), null, delay);
             else if (local != null)
@@ -49,6 +59,9 @@ public class MyBukkit {
 
 
     public Object runTaskTimer(Player player, Location local, Entity entity, Runnable myrun, long delay, long period) {
+        if (delay == 0)
+            delay = 1;
+
         if (folia) {
             if (player != null)
                 return player.getScheduler().runAtFixedRate(main, st -> myrun.run(), null, delay, period);

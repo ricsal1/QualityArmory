@@ -1,6 +1,5 @@
 package me.zombie_striker.qg;
 
-import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import me.zombie_striker.customitemmanager.CustomBaseObject;
 import me.zombie_striker.customitemmanager.CustomItemManager;
 import me.zombie_striker.customitemmanager.MaterialStorage;
@@ -245,8 +244,19 @@ public class QAMain extends JavaPlugin {
 
     static {
         String name = Bukkit.getServer().getClass().getName();
-        name = name.substring(name.indexOf("craftbukkit.") + "craftbukkit.".length());
-        name = name.substring(0, name.indexOf("."));
+
+        System.out.println(name);
+
+        if (name.contains("_")) {
+            //[STDOUT] [me.zombie_striker.qg.QAMain] org.bukkit.craftbukkit.v1_20_R3.CraftServer
+            name = name.substring(name.indexOf("craftbukkit.") + "craftbukkit.".length());
+            if (name.contains(".")) name = name.substring(0, name.indexOf("."));
+        }
+        else {
+            //[STDOUT] [me.zombie_striker.qg.QAMain] org.bukkit.craftbukkit.CraftServer
+            name = "v1_20_R3";
+        }
+
         SERVER_VERSION = name;
     }
 
@@ -656,8 +666,8 @@ public class QAMain extends JavaPlugin {
 
         mybukkit = new MyBukkit(this);
 
-        MinecraftVersion.replaceLogger(this.getLogger());
-        MinecraftVersion.disableUpdateCheck();
+//        MinecraftVersion.replaceLogger(this.getLogger());
+//        MinecraftVersion.disableUpdateCheck();
 
         ProtectionHandler.init();
 
@@ -701,10 +711,10 @@ public class QAMain extends JavaPlugin {
 //            }
 //        }.runTaskLater(this, 1);
 
-        QAMain.mybukkit.runTaskLater(null, null, null, () -> {
+     //   QAMain.mybukkit.runTaskLater(null, null, null, () -> {
             for (Player player : Bukkit.getOnlinePlayers())
                 resourcepackReq.add(player.getUniqueId());
-        }, 1);
+     //   }, 1);
 
         // check if Citizens is present and enabled.
 
@@ -1171,7 +1181,7 @@ public class QAMain extends JavaPlugin {
                 if (m.name().contains("DOOR") || m.name().contains("TRAPDOOR") || m.name().contains("BUTTON")
                         || m.name().contains("LEVER"))
                     interactableBlocks.add(m);
-// Chris: default has 1.14 ItemType
+        // Chris: default has 1.14 ItemType
         if ((MANUALLYSELECT18 || !isVersionHigherThan(1, 9)) && !MANUALLYSELECT113 && !MANUALLYSELECT14) {
             //1.8
             CustomItemManager.registerItemType(getDataFolder(), "gun", new me.zombie_striker.customitemmanager.qa.versions.V1_8.CustomGunItem());
