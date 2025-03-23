@@ -24,7 +24,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
     private static final String CALCTEXT = ChatColor.DARK_GRAY + "qadata:";
     public ChatColor glowEffect = null;
     public boolean unlimitedAmmo = false;
+    Object task;
     // This refers to the last time a gun was shot by a player, on a per-gun basis.
     // Doing this should prevent players from fast-switching to get around
     // bullet-delays
@@ -848,7 +848,8 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
                 return true;
             }
             if (!isAutomatic() && GunUtil.rapidfireshooters.containsKey(player.getPlayer().getUniqueId())) {
-                GunUtil.rapidfireshooters.remove(player.getPlayer().getUniqueId()).cancel();
+                QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.remove(player.getUniqueId()));
+
                 if (QAMain.enableReloadWhenOutOfAmmo) {
                     if (getAmount(player) <= 0) {
                         if (offhand) {
@@ -881,7 +882,7 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
                     QAMain.DEBUG("Out of ammo");
 
                     if (GunUtil.rapidfireshooters.containsKey(player.getUniqueId()))
-                        GunUtil.rapidfireshooters.remove(player.getUniqueId()).cancel();
+                        QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.remove(player.getUniqueId()));
 
                     player.playSound(player.getLocation(), WeaponSounds.OUT_OF_AMMO_CLICK.getSoundName(), 1f, 1f);
 
@@ -971,34 +972,60 @@ public class Gun extends CustomBaseObject implements ArmoryBaseObject, Comparabl
 
                         final Gun checkTo = QualityArmory
                                 .getGun(Update19OffhandChecker.getItemStackOFfhand(player.getPlayer()));
-                        new BukkitRunnable() {
 
-                            @Override
-                            public void run() {
-                                if (!player.getPlayer().isOnline()) {
-                                    QAMain.DEBUG("Canceling since player is offline");
-                                    cancel();
-                                    return;
-                                }
-                                Gun g = null;
-                                if (!QualityArmory.isIronSights(player.getPlayer().getItemInHand())
-                                        || (g = QualityArmory.getGun(
-                                        Update19OffhandChecker.getItemStackOFfhand(player.getPlayer()))) == null
-                                        || g != checkTo) {
-                                    QAMain.toggleNightvision(player.getPlayer(), checkTo, false);
-                                    QAMain.DEBUG(
-                                            "Removing nightvision since either the main hand is not ironsights/ offhand gun is null. : "
-                                                    + (!QualityArmory.isIronSights(player.getPlayer().getItemInHand()))
-                                                    + " "
-                                                    + ((g = QualityArmory.getGun(Update19OffhandChecker
-                                                    .getItemStackOFfhand(player.getPlayer()))) == null)
-                                                    + " " + (g != checkTo));
-                                    cancel();
-                                    return;
-                                }
 
+                      task=  QAMain.myBukkit.runTaskTimer(player, null, null, () -> {
+                            if (!player.getPlayer().isOnline()) {
+                                QAMain.DEBUG("Canceling since player is offline");
+                                QAMain.myBukkit.cancelTask(task);
+                                return;
                             }
-                        }.runTaskTimer(QAMain.getInstance(), 20, 20);
+                            Gun g = null;
+                            if (!QualityArmory.isIronSights(player.getPlayer().getItemInHand())
+                                    || (g = QualityArmory.getGun(
+                                    Update19OffhandChecker.getItemStackOFfhand(player.getPlayer()))) == null
+                                    || g != checkTo) {
+                                QAMain.toggleNightvision(player.getPlayer(), checkTo, false);
+                                QAMain.DEBUG(
+                                        "Removing nightvision since either the main hand is not ironsights/ offhand gun is null. : "
+                                                + (!QualityArmory.isIronSights(player.getPlayer().getItemInHand()))
+                                                + " "
+                                                + ((g = QualityArmory.getGun(Update19OffhandChecker
+                                                .getItemStackOFfhand(player.getPlayer()))) == null)
+                                                + " " + (g != checkTo));
+                                QAMain.myBukkit.cancelTask(task);
+                                return;
+                            }
+                        },20,20);
+
+//                        new BukkitRunnable() {
+//
+//                            @Override
+//                            public void run() {
+//                                if (!player.getPlayer().isOnline()) {
+//                                    QAMain.DEBUG("Canceling since player is offline");
+//                                    cancel();
+//                                    return;
+//                                }
+//                                Gun g = null;
+//                                if (!QualityArmory.isIronSights(player.getPlayer().getItemInHand())
+//                                        || (g = QualityArmory.getGun(
+//                                        Update19OffhandChecker.getItemStackOFfhand(player.getPlayer()))) == null
+//                                        || g != checkTo) {
+//                                    QAMain.toggleNightvision(player.getPlayer(), checkTo, false);
+//                                    QAMain.DEBUG(
+//                                            "Removing nightvision since either the main hand is not ironsights/ offhand gun is null. : "
+//                                                    + (!QualityArmory.isIronSights(player.getPlayer().getItemInHand()))
+//                                                    + " "
+//                                                    + ((g = QualityArmory.getGun(Update19OffhandChecker
+//                                                    .getItemStackOFfhand(player.getPlayer()))) == null)
+//                                                    + " " + (g != checkTo));
+//                                    cancel();
+//                                    return;
+//                                }
+//
+//                            }
+//                        }.runTaskTimer(QAMain.getInstance(), 20, 20);
 
 
                         QualityArmory.sendHotbarGunAmmoCount(player.getPlayer(), this, usedItem, false);

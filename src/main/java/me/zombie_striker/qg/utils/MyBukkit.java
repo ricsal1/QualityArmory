@@ -104,6 +104,17 @@ public class MyBukkit {
     }
 
 
+    public void playerTeleport(Player player, Location loc) {
+        if (folia) {
+            runTaskLater(player, null, null, () -> player.teleportAsync(loc), 5);
+        } else {
+            player.teleport(loc);
+        }
+    }
+
+
+
+
     public boolean isFolia() {
         return folia;
     }

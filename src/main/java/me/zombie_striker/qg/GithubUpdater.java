@@ -5,7 +5,6 @@ import java.net.*;
 import com.google.gson.*;
 import org.bukkit.*;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class GithubUpdater {
 
@@ -47,53 +46,93 @@ public class GithubUpdater {
 								+ main.getDescription().getName() + ": " + ChatColor.WHITE + tagname
 								+ ChatColor.LIGHT_PURPLE + " downloading now!!");
 
-				new BukkitRunnable() {
+				QAMain.myBukkit.runTaskLater(null, null, null, () -> {
+					try {
 
-					@Override
-					public void run() {
+						InputStream in = download.openStream();
+
+						File pluginFile = null;
+
 						try {
-
-							InputStream in = download.openStream();
-
-							File pluginFile = null;
-
-							try {
-								pluginFile = new File(URLDecoder.decode(
-										this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(),
-										"UTF-8"));
-							} catch (UnsupportedEncodingException e) {
-								throw new RuntimeException("You don't have a good text codec on your system", e);
-							}
-
-							// File temp = new File("plugins/update");
-							// if (!temp.exists()) {
-							// temp.mkdir();
-							// }
-
-							File tempInCaseSomethingGoesWrong = new File(main.getName() + "-backup.jar");
-							copy(new FileInputStream(pluginFile), new FileOutputStream(tempInCaseSomethingGoesWrong));
-
-							// Path path = new File("plugins/update" + File.separator + "COD.jar").toPath();
-							pluginFile.setWritable(true, false);
-							pluginFile.delete();
-							// Files.copy(in, pluginFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-							copy(in, new FileOutputStream(pluginFile));
-
-							if (pluginFile.length() < 1000) {
-								// Plugin is too small. Keep old version in case new one is
-								// incomplete/nonexistant
-								copy(new FileInputStream(tempInCaseSomethingGoesWrong),
-										new FileOutputStream(pluginFile));
-							} else {
-								// Plugin is valid, and we can delete the temp
-								tempInCaseSomethingGoesWrong.delete();
-							}
-
-						} catch (IOException e) {
-							e.printStackTrace();
+							pluginFile = new File(URLDecoder.decode(
+									QAMain.getInstance().getClass().getProtectionDomain().getCodeSource().getLocation().getPath(),
+									"UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							throw new RuntimeException("You don't have a good text codec on your system", e);
 						}
+
+						File tempInCaseSomethingGoesWrong = new File(main.getName() + "-backup.jar");
+						copy(new FileInputStream(pluginFile), new FileOutputStream(tempInCaseSomethingGoesWrong));
+
+						pluginFile.setWritable(true, false);
+						pluginFile.delete();
+
+						copy(in, new FileOutputStream(pluginFile));
+
+						if (pluginFile.length() < 1000) {
+							// Plugin is too small. Keep old version in case new one is
+							// incomplete/nonexistant
+							copy(new FileInputStream(tempInCaseSomethingGoesWrong),
+									new FileOutputStream(pluginFile));
+						} else {
+							// Plugin is valid, and we can delete the temp
+							tempInCaseSomethingGoesWrong.delete();
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-				}.runTaskLaterAsynchronously(main, 0);
+				},1);
+
+//				new BukkitRunnable() {
+//
+//					@Override
+//					public void run() {
+//						try {
+//
+//							InputStream in = download.openStream();
+//
+//							File pluginFile = null;
+//
+//							try {
+//								pluginFile = new File(URLDecoder.decode(
+//										this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(),
+//										"UTF-8"));
+//							} catch (UnsupportedEncodingException e) {
+//								throw new RuntimeException("You don't have a good text codec on your system", e);
+//							}
+//
+//							// File temp = new File("plugins/update");
+//							// if (!temp.exists()) {
+//							// temp.mkdir();
+//							// }
+//
+//							File tempInCaseSomethingGoesWrong = new File(main.getName() + "-backup.jar");
+//							copy(new FileInputStream(pluginFile), new FileOutputStream(tempInCaseSomethingGoesWrong));
+//
+//							// Path path = new File("plugins/update" + File.separator + "COD.jar").toPath();
+//							pluginFile.setWritable(true, false);
+//							pluginFile.delete();
+//							// Files.copy(in, pluginFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//							copy(in, new FileOutputStream(pluginFile));
+//
+//							if (pluginFile.length() < 1000) {
+//								// Plugin is too small. Keep old version in case new one is
+//								// incomplete/nonexistant
+//								copy(new FileInputStream(tempInCaseSomethingGoesWrong),
+//										new FileOutputStream(pluginFile));
+//							} else {
+//								// Plugin is valid, and we can delete the temp
+//								tempInCaseSomethingGoesWrong.delete();
+//							}
+//
+//						} catch (IOException e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				}.runTaskLaterAsynchronously(main, 0);
+
+
 				return true;
 			}
 		} catch (IOException e) {

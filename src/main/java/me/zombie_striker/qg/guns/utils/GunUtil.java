@@ -25,8 +25,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
@@ -36,10 +34,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class GunUtil {
 
-	public static HashMap<UUID, BukkitTask> rapidfireshooters = new HashMap<>();
+	public static HashMap<UUID, Object> rapidfireshooters = new HashMap<>();
 	public static HashMap<UUID, Double> highRecoilCounter = new HashMap<>();
 	protected static HashMap<UUID, Location> AF_locs = new HashMap<>();
-	protected static HashMap<UUID, BukkitTask> AF_tasks = new HashMap<>();
+	protected static HashMap<UUID, Object> AF_tasks = new HashMap<>();
 
 	public static void shootHandler(Gun g, Player p) {
 		shootHandler(g, p, g.getBulletsPerShot());
@@ -397,17 +395,27 @@ public class GunUtil {
 
 				if (QAMain.regenDestructableBlocksAfter > 0) {
 					QAMain.DEBUG("Scheduling replacement of " + regenBlocks.size() + " blocks");
-					new BukkitRunnable() {
-						@Override
-						public void run() {
-							QAMain.DEBUG("Replacing " + regenBlocks.size() + " blocks");
 
-							for (Block l : regenBlocks.keySet()) {
-								l.setType(regenBlocks.get(l));
-								CoreProtectHook.logPlace(l,p);
-							}
-						}
-					}.runTaskLater(QAMain.getInstance(), QAMain.regenDestructableBlocksAfter * 20L);
+                    QAMain.myBukkit.runTaskLater(p, null, null, () -> {
+                        QAMain.DEBUG("Replacing " + regenBlocks.size() + " blocks");
+
+                        for (Block l : regenBlocks.keySet()) {
+                            l.setType(regenBlocks.get(l));
+                            CoreProtectHook.logPlace(l, p);
+                        }
+                    }, QAMain.regenDestructableBlocksAfter * 20L);
+
+//					new BukkitRunnable() {
+//						@Override
+//						public void run() {
+//							QAMain.DEBUG("Replacing " + regenBlocks.size() + " blocks");
+//
+//							for (Block l : regenBlocks.keySet()) {
+//								l.setType(regenBlocks.get(l));
+//								CoreProtectHook.logPlace(l,p);
+//							}
+//						}
+//					}.runTaskLater(QAMain.getInstance(), QAMain.regenDestructableBlocksAfter * 20L);
 				}
 			}
 
@@ -418,13 +426,18 @@ public class GunUtil {
 					if (p.getEyeLocation().getBlock().getLightLevel() < g.getLightOnShoot()) {
 						final Location loc = p.getEyeLocation().clone();
 						LightAPI.get().setLightLevel(loc.getWorld().getName(),loc.getBlockX(),loc.getBlockY(),loc.getBlockZ(), g.getLightOnShoot());
-						new BukkitRunnable() {
 
-							@Override
-							public void run() {
-								LightAPI.get().setLightLevel(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 0);
-							}
-						}.runTaskLater(QAMain.getInstance(), 3);
+                        QAMain.myBukkit.runTaskLater(null, loc, null, () -> {
+                            LightAPI.get().setLightLevel(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 0);
+                        }, 3);
+
+//						new BukkitRunnable() {
+//
+//							@Override
+//							public void run() {
+//								LightAPI.get().setLightLevel(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 0);
+//							}
+//						}.runTaskLater(QAMain.getInstance(), 3);
 					}
 				}
 			} catch (Error | Exception e5) {
@@ -510,119 +523,227 @@ public class GunUtil {
 		}
 
 		if (g.isAutomatic()) {
-			rapidfireshooters.put(player.getUniqueId(), new BukkitRunnable() {
-				int slotUsed = player.getInventory().getHeldItemSlot();
 
-				@Override
-				public void run() {
-					if (!player.isOnline()) {
-						QAMain.DEBUG("Stopping Automatic Firing because player left");
-						rapidfireshooters.remove(player.getUniqueId());
-						cancel();
-						return;
-					}
+            int slotUsed = player.getInventory().getHeldItemSlot();
 
-					if ((g.getChargingHandler() != null && g.getChargingHandler().isCharging(player)) || GunRefillerRunnable.isReloading(player)) {
-						QAMain.DEBUG("Cancelling rapid fire shoot due to charging or reloading.");
-						rapidfireshooters.remove(player.getUniqueId());
-						cancel();
-						return;
-					}
+            rapidfireshooters.put(player.getUniqueId(), QAMain.myBukkit.runTaskTimer(player, null, null, () -> {
 
-					if(!holdingRMB){
-						if ((!g.hasIronSights() || !IronsightsHandler.isAiming(player)) && ((player.isSneaking() == QAMain.SwapSneakToSingleFire))) {
-							cancel();
-							QAMain.DEBUG("Stopping Automatic Firing");
-							rapidfireshooters.remove(player.getUniqueId());
-							return;
-						}
-					}
+                if (!player.isOnline()) {
+                    QAMain.DEBUG("Stopping Automatic Firing because player left");
+                    QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                    return;
+                }
 
-					ItemStack temp = IronsightsHandler.getItemAiming(player);
+                if ((g.getChargingHandler() != null && g.getChargingHandler().isCharging(player)) || GunRefillerRunnable.isReloading(player)) {
+                    QAMain.DEBUG("Cancelling rapid fire shoot due to charging or reloading.");
+                    QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                    return;
+                }
 
-					if (QAMain.enableDurability && g.getDamage(temp) <= 0) {
-						player.playSound(player.getLocation(), WeaponSounds.METALHIT.getSoundName(), 1, 1);
-						rapidfireshooters.remove(player.getUniqueId());
-						QAMain.DEBUG("Canceld due to weapon durability = " + g.getDamage(temp));
-						cancel();
-						return;
-					}
+                if (!holdingRMB) {
+                    if ((!g.hasIronSights() || !IronsightsHandler.isAiming(player)) && ((player.isSneaking() == QAMain.SwapSneakToSingleFire))) {
+                        QAMain.DEBUG("Stopping Automatic Firing");
+                        QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                        return;
+                    }
+                }
 
-					int amount = Gun.getAmount(player);
-					if(holdingRMB && !QAMain.SWAP_TO_LMB_SHOOT){
-						if(System.currentTimeMillis()-g.getLastTimeRMB(player) > 310){
-							rapidfireshooters.remove(player.getUniqueId());
-							cancel();
-							return;
-						}
-					}
+                ItemStack temp = IronsightsHandler.getItemAiming(player);
 
-					if (((QAMain.SWAP_TO_LMB_SHOOT && player.isSneaking() == QAMain.SwapSneakToSingleFire)) || slotUsed != player.getInventory().getHeldItemSlot() || amount <= 0) {
-						rapidfireshooters.remove(player.getUniqueId());
-						cancel();
-						return;
-					}
+                if (QAMain.enableDurability && g.getDamage(temp) <= 0) {
+                    player.playSound(player.getLocation(), WeaponSounds.METALHIT.getSoundName(), 1, 1);
+                    QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                    QAMain.DEBUG("Canceld due to weapon durability = " + g.getDamage(temp));
+                    return;
+                }
 
-					boolean regularshoot = true;
-					if (g.getChargingHandler() != null && (!g.getChargingHandler().isCharging(player)
-							&& (g.getReloadingingHandler() == null || !g.getReloadingingHandler().isReloading(player)))) {
-						regularshoot = g.getChargingHandler().shoot(g, player, temp);
-						QAMain.DEBUG(
-								"Charging (rapidfire) shoot debug: " + g.getName() + " = " + (g.getChargingHandler() == null
-										? "null"
-										: g.getChargingHandler().getName()));
-					}
-					if (regularshoot) {
-						GunUtil.shootHandler(g, player);
-						playShoot(g, player);
-						if (QAMain.enableRecoil)
-							addRecoil(player, g);
-						// TODO: recoil
-					}
+                int amount = Gun.getAmount(player);
+                if (holdingRMB && !QAMain.SWAP_TO_LMB_SHOOT) {
+                    if (System.currentTimeMillis() - g.getLastTimeRMB(player) > 310) {
+                        QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                        return;
+                    }
+                }
+
+                if (((QAMain.SWAP_TO_LMB_SHOOT && player.isSneaking() == QAMain.SwapSneakToSingleFire)) || slotUsed != player.getInventory().getHeldItemSlot() || amount <= 0) {
+                    QAMain.myBukkit.cancelTask(rapidfireshooters.remove(player.getUniqueId()));
+                    return;
+                }
+
+                boolean regularshoot1 = true;
+                if (g.getChargingHandler() != null && (!g.getChargingHandler().isCharging(player)
+                        && (g.getReloadingingHandler() == null || !g.getReloadingingHandler().isReloading(player)))) {
+                    regularshoot1 = g.getChargingHandler().shoot(g, player, temp);
+                    QAMain.DEBUG(
+                            "Charging (rapidfire) shoot debug: " + g.getName() + " = " + (g.getChargingHandler() == null
+                                    ? "null"
+                                    : g.getChargingHandler().getName()));
+                }
+                if (regularshoot1) {
+                    GunUtil.shootHandler(g, player);
+                    playShoot(g, player);
+                    if (QAMain.enableRecoil)
+                        addRecoil(player, g);
+                    // TODO: recoil
+                }
 
 
-					amount--;
+                amount--;
 
-					if (amount < 0)
-						amount = 0;
+                if (amount < 0)
+                    amount = 0;
 
-					int slot;
-					if (offhand) {
-						slot = -1;
-					} else {
-						slot = player.getInventory().getHeldItemSlot();
-					}
-					Gun.updateAmmo(g, player.getItemInHand(), amount);
-					if(QAMain.showAmmoInXPBar){
-						updateXPBar(player,g,amount);
-					}
+                int slot;
+                if (offhand) {
+                    slot = -1;
+                } else {
+                    slot = player.getInventory().getHeldItemSlot();
+                }
+                Gun.updateAmmo(g, player.getItemInHand(), amount);
+                if (QAMain.showAmmoInXPBar) {
+                    updateXPBar(player, g, amount);
+                }
 
-					if (slot == -1) {
-						try {
-							if (QualityArmory.isIronSights(player.getItemInHand())) {
-								player.getInventory().setItemInOffHand(temp);
-								QAMain.DEBUG("Sett Offhand because ironsights in main hand");
-							} else {
-								player.getInventory().setItemInHand(temp);
-								QAMain.DEBUG("Set mainhand because ironsights not in main hand");
-							}
+                if (slot == -1) {
+                    try {
+                        if (QualityArmory.isIronSights(player.getItemInHand())) {
+                            player.getInventory().setItemInOffHand(temp);
+                            QAMain.DEBUG("Sett Offhand because ironsights in main hand");
+                        } else {
+                            player.getInventory().setItemInHand(temp);
+                            QAMain.DEBUG("Set mainhand because ironsights not in main hand");
+                        }
 
-						} catch (Error e) {
-						}
-					} else {
-						ItemStack tempCheck = player.getInventory().getItem(slot);
-						if (QualityArmory.isIronSights(tempCheck)) {
-							CustomBaseObject tempBase = QualityArmory.getCustomItem(Update19OffhandChecker.getItemStackOFfhand(player));
-							if (tempBase != null && tempBase == g) {
-								Update19OffhandChecker.setOffhand(player, temp);
-							}
-						} else {
-							player.getInventory().setItem(slot, temp);
-						}
-					}
-					QualityArmory.sendHotbarGunAmmoCount(player, g, temp, false);
-				}
-			}.runTaskTimer(QAMain.getInstance(), 10 / g.getFireRate(), 10 / g.getFireRate()));
+                    } catch (Error e) {
+                    }
+                } else {
+                    ItemStack tempCheck = player.getInventory().getItem(slot);
+                    if (QualityArmory.isIronSights(tempCheck)) {
+                        CustomBaseObject tempBase = QualityArmory.getCustomItem(Update19OffhandChecker.getItemStackOFfhand(player));
+                        if (tempBase != null && tempBase == g) {
+                            Update19OffhandChecker.setOffhand(player, temp);
+                        }
+                    } else {
+                        player.getInventory().setItem(slot, temp);
+                    }
+                }
+                QualityArmory.sendHotbarGunAmmoCount(player, g, temp, false);
+
+            }, 10 / g.getFireRate(), 10 / g.getFireRate()));
+
+//			rapidfireshooters.put(player.getUniqueId(), new BukkitRunnable() {
+//				int slotUsed = player.getInventory().getHeldItemSlot();
+//
+//				@Override
+//				public void run() {
+//					if (!player.isOnline()) {
+//						QAMain.DEBUG("Stopping Automatic Firing because player left");
+//						rapidfireshooters.remove(player.getUniqueId());
+//						cancel();
+//						return;
+//					}
+//
+//					if ((g.getChargingHandler() != null && g.getChargingHandler().isCharging(player)) || GunRefillerRunnable.isReloading(player)) {
+//						QAMain.DEBUG("Cancelling rapid fire shoot due to charging or reloading.");
+//						rapidfireshooters.remove(player.getUniqueId());
+//						cancel();
+//						return;
+//					}
+//
+//					if(!holdingRMB){
+//						if ((!g.hasIronSights() || !IronsightsHandler.isAiming(player)) && ((player.isSneaking() == QAMain.SwapSneakToSingleFire))) {
+//							cancel();
+//							QAMain.DEBUG("Stopping Automatic Firing");
+//							rapidfireshooters.remove(player.getUniqueId());
+//							return;
+//						}
+//					}
+//
+//					ItemStack temp = IronsightsHandler.getItemAiming(player);
+//
+//					if (QAMain.enableDurability && g.getDamage(temp) <= 0) {
+//						player.playSound(player.getLocation(), WeaponSounds.METALHIT.getSoundName(), 1, 1);
+//						rapidfireshooters.remove(player.getUniqueId());
+//						QAMain.DEBUG("Canceld due to weapon durability = " + g.getDamage(temp));
+//						cancel();
+//						return;
+//					}
+//
+//					int amount = Gun.getAmount(player);
+//					if(holdingRMB && !QAMain.SWAP_TO_LMB_SHOOT){
+//						if(System.currentTimeMillis()-g.getLastTimeRMB(player) > 310){
+//							rapidfireshooters.remove(player.getUniqueId());
+//							cancel();
+//							return;
+//						}
+//					}
+//
+//					if (((QAMain.SWAP_TO_LMB_SHOOT && player.isSneaking() == QAMain.SwapSneakToSingleFire)) || slotUsed != player.getInventory().getHeldItemSlot() || amount <= 0) {
+//						rapidfireshooters.remove(player.getUniqueId());
+//						cancel();
+//						return;
+//					}
+//
+//					boolean regularshoot = true;
+//					if (g.getChargingHandler() != null && (!g.getChargingHandler().isCharging(player)
+//							&& (g.getReloadingingHandler() == null || !g.getReloadingingHandler().isReloading(player)))) {
+//						regularshoot = g.getChargingHandler().shoot(g, player, temp);
+//						QAMain.DEBUG(
+//								"Charging (rapidfire) shoot debug: " + g.getName() + " = " + (g.getChargingHandler() == null
+//										? "null"
+//										: g.getChargingHandler().getName()));
+//					}
+//					if (regularshoot) {
+//						GunUtil.shootHandler(g, player);
+//						playShoot(g, player);
+//						if (QAMain.enableRecoil)
+//							addRecoil(player, g);
+//						// TODO: recoil
+//					}
+//
+//
+//					amount--;
+//
+//					if (amount < 0)
+//						amount = 0;
+//
+//					int slot;
+//					if (offhand) {
+//						slot = -1;
+//					} else {
+//						slot = player.getInventory().getHeldItemSlot();
+//					}
+//					Gun.updateAmmo(g, player.getItemInHand(), amount);
+//					if(QAMain.showAmmoInXPBar){
+//						updateXPBar(player,g,amount);
+//					}
+//
+//					if (slot == -1) {
+//						try {
+//							if (QualityArmory.isIronSights(player.getItemInHand())) {
+//								player.getInventory().setItemInOffHand(temp);
+//								QAMain.DEBUG("Sett Offhand because ironsights in main hand");
+//							} else {
+//								player.getInventory().setItemInHand(temp);
+//								QAMain.DEBUG("Set mainhand because ironsights not in main hand");
+//							}
+//
+//						} catch (Error e) {
+//						}
+//					} else {
+//						ItemStack tempCheck = player.getInventory().getItem(slot);
+//						if (QualityArmory.isIronSights(tempCheck)) {
+//							CustomBaseObject tempBase = QualityArmory.getCustomItem(Update19OffhandChecker.getItemStackOFfhand(player));
+//							if (tempBase != null && tempBase == g) {
+//								Update19OffhandChecker.setOffhand(player, temp);
+//							}
+//						} else {
+//							player.getInventory().setItem(slot, temp);
+//						}
+//					}
+//					QualityArmory.sendHotbarGunAmmoCount(player, g, temp, false);
+//				}
+//			}.runTaskTimer(QAMain.getInstance(), 10 / g.getFireRate(), 10 / g.getFireRate()));
 		}
 
 		int amount = Gun.getAmount(player) - 1;
@@ -664,36 +785,63 @@ public class GunUtil {
 
 	public static void playShoot(final Gun g, final Player player) {
 		g.damageDurability(player);
-		new BukkitRunnable() {
-			@SuppressWarnings("deprecation")
-			@Override
-			public void run() {
-				try {
-					String soundname = null;
-					if (g.getWeaponSounds().size() > 1) {
-						soundname = g.getWeaponSounds()
-								.get(ThreadLocalRandom.current().nextInt(g.getWeaponSounds().size()));
-					} else {
-						soundname = g.getWeaponSound();
-					}
-					player.getWorld().playSound(player.getLocation(), soundname, (float) g.getVolume(), 1);
-					if (!QAMain.isVersionHigherThan(1, 9)) {
-						try {
-							player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
-							player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
-							player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
-						} catch (Error | Exception e3) {
-							player.getWorld().playSound(player.getLocation(), Sound.valueOf("BLOCK_LEVER_CLICK"), 5, 1);
-						}
-					}
-				} catch (Error e2) {
-					player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
-					player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
-					player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
-				}
 
-			}
-		}.runTaskLater(QAMain.getInstance(), 1);
+        QAMain.myBukkit.runTaskLater(player, null, null, () -> {
+            try {
+                String soundname = null;
+                if (g.getWeaponSounds().size() > 1) {
+                    soundname = g.getWeaponSounds()
+                            .get(ThreadLocalRandom.current().nextInt(g.getWeaponSounds().size()));
+                } else {
+                    soundname = g.getWeaponSound();
+                }
+                player.getWorld().playSound(player.getLocation(), soundname, (float) g.getVolume(), 1);
+                if (!QAMain.isVersionHigherThan(1, 9)) {
+                    try {
+                        player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+                        player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
+                        player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
+                    } catch (Error | Exception e3) {
+                        player.getWorld().playSound(player.getLocation(), Sound.valueOf("BLOCK_LEVER_CLICK"), 5, 1);
+                    }
+                }
+            } catch (Error e2) {
+                player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+                player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
+                player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
+            }
+        }, 1);
+
+//		new BukkitRunnable() {
+//			@SuppressWarnings("deprecation")
+//			@Override
+//			public void run() {
+//				try {
+//					String soundname = null;
+//					if (g.getWeaponSounds().size() > 1) {
+//						soundname = g.getWeaponSounds()
+//								.get(ThreadLocalRandom.current().nextInt(g.getWeaponSounds().size()));
+//					} else {
+//						soundname = g.getWeaponSound();
+//					}
+//					player.getWorld().playSound(player.getLocation(), soundname, (float) g.getVolume(), 1);
+//					if (!QAMain.isVersionHigherThan(1, 9)) {
+//						try {
+//							player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+//							player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
+//							player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
+//						} catch (Error | Exception e3) {
+//							player.getWorld().playSound(player.getLocation(), Sound.valueOf("BLOCK_LEVER_CLICK"), 5, 1);
+//						}
+//					}
+//				} catch (Error e2) {
+//					player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+//					player.getWorld().playSound(player.getLocation(), Sound.valueOf("WITHER_SHOOT"), 8, 2);
+//					player.getWorld().playSound(player.getLocation(), Sound.valueOf("EXPLODE"), 8, 2f);
+//				}
+//
+//			}
+//		}.runTaskLater(QAMain.getInstance(), 1);
 		// Simply delaying the sound by 1/20th of a second makes shooting so much more
 		// immersive
 	}
@@ -764,15 +912,23 @@ public class GunUtil {
 						highRecoilCounter.get(player.getUniqueId()) + g.getRecoil());
 			} else {
 				highRecoilCounter.put(player.getUniqueId(), g.getRecoil());
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						if (QAMain.hasProtocolLib && QAMain.isVersionHigherThan(1, 13) && !QAMain.hasViaVersion) {
-							addRecoilWithProtocolLib(player, g, true);
-						} else
-							addRecoilWithTeleport(player, g, true);
-					}
-				}.runTaskLater(QAMain.getInstance(), 3);
+
+                QAMain.myBukkit.runTaskLater(player, null, null, () -> {
+                    if (QAMain.hasProtocolLib && QAMain.isVersionHigherThan(1, 13) && !QAMain.hasViaVersion) {
+                        addRecoilWithProtocolLib(player, g, true);
+                    } else
+                        addRecoilWithTeleport(player, g, true);
+                }, 3);
+
+//				new BukkitRunnable() {
+//					@Override
+//					public void run() {
+//						if (QAMain.hasProtocolLib && QAMain.isVersionHigherThan(1, 13) && !QAMain.hasViaVersion) {
+//							addRecoilWithProtocolLib(player, g, true);
+//						} else
+//							addRecoilWithTeleport(player, g, true);
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 3);
 			}
 		} else {
 			if (QAMain.hasProtocolLib && QAMain.isVersionHigherThan(1, 13)) {

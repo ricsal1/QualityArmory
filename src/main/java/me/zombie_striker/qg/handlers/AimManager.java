@@ -29,7 +29,9 @@ public class AimManager extends BukkitRunnable implements Listener {
 	}
 	
 	public AimManager() {
-		this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
+        QAMain.myBukkit.runTaskTimer(null, null, null, () -> QAMain.getInstance(), 10, 10);
+
+//        this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
 	}
 
 	@Override

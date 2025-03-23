@@ -20,7 +20,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.zombie_striker.qg.*;
 import me.zombie_striker.qg.ammo.Ammo;
@@ -42,11 +41,17 @@ public class QualityArmory {
 			int cost) {
 		File newGunsDir = new File(QAMain.getInstance().getDataFolder(), "newGuns");
 		final File gunFile = new File(newGunsDir, name);
-		new BukkitRunnable() {
-			public void run() {
-				GunYMLLoader.loadGuns(QAMain.getInstance(), gunFile);
-			}
-		}.runTaskLater(QAMain.getInstance(), 1);
+
+		QAMain.myBukkit.runTaskLater(null, null, null, () -> {
+			GunYMLLoader.loadGuns(QAMain.getInstance(), gunFile);
+		},1);
+
+//		new BukkitRunnable() {
+//			public void run() {
+//				GunYMLLoader.loadGuns(QAMain.getInstance(), gunFile);
+//			}
+//		}.runTaskLater(QAMain.getInstance(), 1);
+
 		return GunYMLCreator.createNewCustomGun(QAMain.getInstance().getDataFolder(), name, name, displayname, id, null,
 				type, sound, hasIronSights, ammotype, damage, maxBullets, cost).setMaterial(material);
 	}
@@ -96,63 +101,109 @@ public class QualityArmory {
 
 	@SuppressWarnings({"deprecation", "unchecked"})
 	public static void sendResourcepack(final Player player, final boolean warning) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (QAMain.namesToBypass.contains(player.getName())) {
-					QAMain.resourcepackReq.add(player.getUniqueId());
-					return;
-				}
-				if (warning) {
-					try {
-						player.sendTitle(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1), LocalUtils.colorize(QAMain.S_NORES2));
-					} catch (Error e2) {
-						player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1));
-						player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES2));
-					}
-				}
-				if (QAMain.showCrashMessage)
-					player.sendMessage(LocalUtils.colorize(QAMain.prefix + QAMain.S_RESOURCEPACK_HELP));
 
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						try {
-							try {
-								QAMain.DEBUG("Sending resourcepack : " + (QAMain.AutoDetectResourcepackVersion) + " || "
-										+ QAMain.MANUALLYSELECT18 + " || " + QAMain.isVersionHigherThan(1, 9) + " || ");
-								try {
-									if (QAMain.hasViaVersion) {
-										QAMain.DEBUG(
-												"Has Viaversion: " + com.viaversion.viaversion.api.Via.getAPI()
-														.getPlayerVersion(player) + " 1.8=" + QAMain.ViaVersionIdfor_1_8);
-
-									}
-								} catch (Error | Exception re4) {
-								}
-
-								if (QAMain.isVersionHigherThan(1, 19))
-									player.setResourcePack(CustomItemManager.getResourcepack(player), null, QAMain.kickIfDeniedRequest);
-                                else player.setResourcePack(CustomItemManager.getResourcepack(player));
-
-							} catch (Error | Exception e4) {
-
-								player.setResourcePack(CustomItemManager.getResourcepack(player));
-							}
-
-							if (!QAMain.isVersionHigherThan(1, 9)) {
-								QAMain.resourcepackReq.add(player.getUniqueId());
-								QAMain.sentResourcepack.put(player.getUniqueId(), System.currentTimeMillis());
-							}
-							// If the player is on 1.8, manually add them to the resource list.
-
-						} catch (Exception e) {
-
-						}
-					}
-				}.runTaskLater(QAMain.getInstance(), 20 * (warning ? 1 : 5));
+		QAMain.myBukkit.runTaskLater(null, null, null, () -> {
+			if (QAMain.namesToBypass.contains(player.getName())) {
+				QAMain.resourcepackReq.add(player.getUniqueId());
+				return;
 			}
-		}.runTaskLater(QAMain.getInstance(), (long) (20 * QAMain.secondsTilSend));
+			if (warning) {
+				try {
+					player.sendTitle(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1), LocalUtils.colorize(QAMain.S_NORES2));
+				} catch (Error e2) {
+					player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1));
+					player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES2));
+				}
+			}
+			if (QAMain.showCrashMessage)
+				player.sendMessage(LocalUtils.colorize(QAMain.prefix + QAMain.S_RESOURCEPACK_HELP));
+
+			QAMain.myBukkit.runTaskLater(null, null, null, () -> {
+				try {
+					try {
+						QAMain.DEBUG("Sending resourcepack : " + (QAMain.AutoDetectResourcepackVersion) + " || "
+								+ QAMain.MANUALLYSELECT18 + " || " + QAMain.isVersionHigherThan(1, 9) + " || ");
+						try {
+							if (QAMain.hasViaVersion) {
+								QAMain.DEBUG(
+										"Has Viaversion: " + com.viaversion.viaversion.api.Via.getAPI()
+												.getPlayerVersion(player) + " 1.8=" + QAMain.ViaVersionIdfor_1_8);
+
+							}
+						} catch (Error | Exception re4) {
+						}
+
+						player.setResourcePack(CustomItemManager.getResourcepack(player));
+
+					} catch (Error | Exception e4) {
+						player.setResourcePack(CustomItemManager.getResourcepack(player));
+					}
+
+					if (!QAMain.isVersionHigherThan(1, 9)) {
+						QAMain.resourcepackReq.add(player.getUniqueId());
+						QAMain.sentResourcepack.put(player.getUniqueId(), System.currentTimeMillis());
+					}
+
+				} catch (Exception e) {
+
+				}
+			},(long)20 * (warning ? 1 : 5));
+
+		},(long)(20 * QAMain.secondsTilSend));
+
+
+//		new BukkitRunnable() {
+//			@Override
+//			public void run() {
+//				if (QAMain.namesToBypass.contains(player.getName())) {
+//					QAMain.resourcepackReq.add(player.getUniqueId());
+//					return;
+//				}
+//				if (warning) {
+//					try {
+//						player.sendTitle(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1), LocalUtils.colorize(QAMain.S_NORES2));
+//					} catch (Error e2) {
+//						player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES1));
+//						player.sendMessage(LocalUtils.colorize(ChatColor.RED + QAMain.S_NORES2));
+//					}
+//				}
+//				if (QAMain.showCrashMessage)
+//					player.sendMessage(LocalUtils.colorize(QAMain.prefix + QAMain.S_RESOURCEPACK_HELP));
+//
+//				new BukkitRunnable() {
+//					@Override
+//					public void run() {
+//						try {
+//							try {
+//								QAMain.DEBUG("Sending resourcepack : " + (QAMain.AutoDetectResourcepackVersion) + " || "
+//										+ QAMain.MANUALLYSELECT18 + " || " + QAMain.isVersionHigherThan(1, 9) + " || ");
+//								try {
+//									if (QAMain.hasViaVersion) {
+//										QAMain.DEBUG(
+//												"Has Viaversion: " + com.viaversion.viaversion.api.Via.getAPI()
+//														.getPlayerVersion(player) + " 1.8=" + QAMain.ViaVersionIdfor_1_8);
+//
+//									}
+//								} catch (Error | Exception re4) {
+//								}
+//									player.setResourcePack(CustomItemManager.getResourcepack(player));
+//
+//							} catch (Error | Exception e4) {
+//								player.setResourcePack(CustomItemManager.getResourcepack(player));
+//							}
+//
+//							if (!QAMain.isVersionHigherThan(1, 9)) {
+//								QAMain.resourcepackReq.add(player.getUniqueId());
+//								QAMain.sentResourcepack.put(player.getUniqueId(), System.currentTimeMillis());
+//							}
+//
+//						} catch (Exception e) {
+//
+//						}
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 20 * (warning ? 1 : 5));
+//			}
+//		}.runTaskLater(QAMain.getInstance(), (long) (20 * QAMain.secondsTilSend));
 	}
 
 	public static boolean allowGunsInRegion(Location loc) {
@@ -468,17 +519,27 @@ public class QualityArmory {
 		} else if (QAMain.showReloadOnTitle && reloading) {
 			for (int i = 1; i < g.getReloadTime() * 20; i += 2) {
 				final int id = i;
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						StringBuilder sb = new StringBuilder();
-						sb.append(ChatColor.GRAY);
-						sb.append(repeat("#", (int) (20 * (1.0 * id / (20 * g.getReloadTime())))));
-						sb.append(ChatColor.DARK_GRAY);
-						sb.append(repeat("#", (int) (20 - ((int) (20.0 * id / (20 * g.getReloadTime()))))));
-						p.sendTitle(QAMain.S_RELOADING_MESSAGE, sb.toString(), 0, 4, 0);
-					}
-				}.runTaskLater(QAMain.getInstance(), i);
+
+				QAMain.myBukkit.runTaskLater(null, null, null, () -> {
+					StringBuilder sb = new StringBuilder();
+					sb.append(ChatColor.GRAY);
+					sb.append(repeat("#", (int) (20 * (1.0 * id / (20 * g.getReloadTime())))));
+					sb.append(ChatColor.DARK_GRAY);
+					sb.append(repeat("#", (int) (20 - ((int) (20.0 * id / (20 * g.getReloadTime()))))));
+					p.sendTitle(QAMain.S_RELOADING_MESSAGE, sb.toString(), 0, 4, 0);
+				},i);
+
+//				new BukkitRunnable() {
+//					@Override
+//					public void run() {
+//						StringBuilder sb = new StringBuilder();
+//						sb.append(ChatColor.GRAY);
+//						sb.append(repeat("#", (int) (20 * (1.0 * id / (20 * g.getReloadTime())))));
+//						sb.append(ChatColor.DARK_GRAY);
+//						sb.append(repeat("#", (int) (20 - ((int) (20.0 * id / (20 * g.getReloadTime()))))));
+//						p.sendTitle(QAMain.S_RELOADING_MESSAGE, sb.toString(), 0, 4, 0);
+//					}
+//				}.runTaskLater(QAMain.getInstance(), i);
 			}
 		} else {
 

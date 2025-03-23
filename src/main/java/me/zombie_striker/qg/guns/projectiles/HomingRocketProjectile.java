@@ -2,6 +2,7 @@ package me.zombie_striker.qg.guns.projectiles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.cryptomorin.xseries.particles.XParticle;
 import me.zombie_striker.qg.QAMain;
@@ -18,35 +19,34 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class HomingRocketProjectile implements RealtimeCalculationProjectile {
 	public HomingRocketProjectile() {
 		ProjectileManager.add(this);
 	}
+Object task;
 
 	@Override
 	public void spawn(final Gun g, final Location starting, final Player player, final Vector dir) {
-		new BukkitRunnable() {
-			Location RPGLOCATION = starting.clone();
-			int distance = g.getMaxDistance();
-			Vector vect = dir;
 
-			@SuppressWarnings("deprecation")
-			@Override
-			public void run() {
+		Location RPGLOCATION = starting.clone();
+		final AtomicInteger[] distance = {new AtomicInteger(g.getMaxDistance())};
+		final Vector[] vect = {dir};
+
+		task=	QAMain.myBukkit.runTaskTimer(player, null, null, () -> {
+
 				for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
-					distance--;
-					RPGLOCATION.add(vect);
+					distance[0].getAndDecrement();
+					RPGLOCATION.add(vect[0]);
 					Block lookat = player.getTargetBlock(null, 300);
 					if (lookat != null && lookat.getType() != Material.AIR) {
 						if (QualityArmory.isGun(player.getItemInHand())) {
-							Gun g = me.zombie_striker.qg.api.QualityArmory.getGun(player.getItemInHand());
-							if (g.usesCustomProjctiles() && g.getCustomProjectile() instanceof HomingRocketProjectile) {
+							Gun g1 = me.zombie_striker.qg.api.QualityArmory.getGun(player.getItemInHand());
+							if (g1.usesCustomProjctiles() && g1.getCustomProjectile() instanceof HomingRocketProjectile) {
 								Vector newDir = lookat.getLocation().clone().subtract(RPGLOCATION).toVector()
 										.normalize();
-								vect = newDir;
+								vect[0] = newDir;
 							}
 						}
 					}
@@ -69,7 +69,7 @@ public class HomingRocketProjectile implements RealtimeCalculationProjectile {
 					} catch (Error e) {
 					}
 
-					if (GunUtil.isSolid(RPGLOCATION.getBlock(), RPGLOCATION) || entityNear || distance < 0) {
+					if (GunUtil.isSolid(RPGLOCATION.getBlock(), RPGLOCATION) || entityNear || distance[0].get() < 0) {
 						if (QAMain.enableExplosionDamage) {
 							QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(HomingRocketProjectile.this, RPGLOCATION);
 							Bukkit.getPluginManager().callEvent(event);
@@ -85,12 +85,75 @@ public class HomingRocketProjectile implements RealtimeCalculationProjectile {
 							player.getWorld().playSound(RPGLOCATION, Sound.valueOf("EXPLODE"), 8, 0.7f);
 						}
 						ExplosionHandler.handleAOEExplosion(player, RPGLOCATION, g.getDamage(), g.getExplosionRadius());
-						cancel();
+						QAMain.myBukkit.cancelTask(task);
 						return;
 					}
 				}
-			}
-		}.runTaskTimer(QAMain.getInstance(), 0, 1);
+		},0,1);
+
+//		new BukkitRunnable() {
+//			Location RPGLOCATION = starting.clone();
+//			int distance = g.getMaxDistance();
+//			Vector vect = dir;
+//
+//			@SuppressWarnings("deprecation")
+//			@Override
+//			public void run() {
+//				for (int tick = 0; tick < g.getVelocityForRealtimeCalculations(); tick++) {
+//					distance--;
+//					RPGLOCATION.add(vect);
+//					Block lookat = player.getTargetBlock(null, 300);
+//					if (lookat != null && lookat.getType() != Material.AIR) {
+//						if (QualityArmory.isGun(player.getItemInHand())) {
+//							Gun g = me.zombie_striker.qg.api.QualityArmory.getGun(player.getItemInHand());
+//							if (g.usesCustomProjctiles() && g.getCustomProjectile() instanceof HomingRocketProjectile) {
+//								Vector newDir = lookat.getLocation().clone().subtract(RPGLOCATION).toVector()
+//										.normalize();
+//								vect = newDir;
+//							}
+//						}
+//					}
+//					ParticleHandlers.spawnGunParticles(g, RPGLOCATION);
+//					try {
+//						player.getWorld().playSound(RPGLOCATION, MultiVersionLookup.getDragonGrowl(), 1, 2f);
+//
+//					} catch (Error e2) {
+//						RPGLOCATION.getWorld().playEffect(RPGLOCATION, Effect.valueOf("CLOUD"), 0);
+//						player.getWorld().playSound(RPGLOCATION, Sound.valueOf("ENDERDRAGON_GROWL"), 1, 2f);
+//					}
+//					boolean entityNear = false;
+//					try {
+//						List<Entity> e2 = new ArrayList<>(
+//								RPGLOCATION.getWorld().getNearbyEntities(RPGLOCATION, 1, 1, 1));
+//						for(Entity e : e2) {
+//							if(e != player && (!(e instanceof Player) || ((Player)e).getGameMode()!=GameMode.SPECTATOR))
+//								entityNear = true;
+//						}
+//					} catch (Error e) {
+//					}
+//
+//					if (GunUtil.isSolid(RPGLOCATION.getBlock(), RPGLOCATION) || entityNear || distance < 0) {
+//						if (QAMain.enableExplosionDamage) {
+//							QAProjectileExplodeEvent event = new QAProjectileExplodeEvent(HomingRocketProjectile.this, RPGLOCATION);
+//							Bukkit.getPluginManager().callEvent(event);
+//							if (!event.isCancelled()) ExplosionHandler.handleExplosion(RPGLOCATION, 4, 2);
+//						}
+//						try {
+//							player.getWorld().playSound(RPGLOCATION, WeaponSounds.WARHEAD_EXPLODE.getName(), 10, 0.9f);
+//							player.getWorld().playSound(RPGLOCATION, Sound.ENTITY_GENERIC_EXPLODE, 8, 0.7f);
+//							RPGLOCATION.getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(), RPGLOCATION, 0);
+//
+//						} catch (Error e3) {
+//							RPGLOCATION.getWorld().playEffect(RPGLOCATION, Effect.valueOf("CLOUD"), 0);
+//							player.getWorld().playSound(RPGLOCATION, Sound.valueOf("EXPLODE"), 8, 0.7f);
+//						}
+//						ExplosionHandler.handleAOEExplosion(player, RPGLOCATION, g.getDamage(), g.getExplosionRadius());
+//						cancel();
+//						return;
+//					}
+//				}
+//			}
+//		}.runTaskTimer(QAMain.getInstance(), 0, 1);
 	}
 
 	@Override

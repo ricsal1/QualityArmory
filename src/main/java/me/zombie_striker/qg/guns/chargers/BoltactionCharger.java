@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.zombie_striker.qg.QAMain;
 import me.zombie_striker.qg.guns.Gun;
@@ -31,39 +30,70 @@ public class BoltactionCharger implements ChargingHandler {
 	@Override
 	public boolean shoot(Gun g, final Player player, ItemStack stack) {
 		timeR.add(player.getUniqueId());
-		new BukkitRunnable() {
-			@Override
-			public void run() {
+
+		QAMain.myBukkit.runTaskLater(player, null, null, () -> {
+			try {
+				if (QAMain.isVersionHigherThan(1, 9)) {
+					player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
+				} else
+					player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
+			} catch (Error e) {
 				try {
-					if (QAMain.isVersionHigherThan(1, 9)) {
-						player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
-					} else
-						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
-				} catch (Error e) {
-					try {
-						player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
-					} catch (Error | Exception e43) {
-					}
+					player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+				} catch (Error | Exception e43) {
 				}
 			}
-		}.runTaskLater(QAMain.getInstance(), 10);
-		new BukkitRunnable() {
-			@Override
-			public void run() {
+		},10);
+
+//		new BukkitRunnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					if (QAMain.isVersionHigherThan(1, 9)) {
+//						player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
+//					} else
+//						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
+//				} catch (Error e) {
+//					try {
+//						player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+//					} catch (Error | Exception e43) {
+//					}
+//				}
+//			}
+//		}.runTaskLater(QAMain.getInstance(), 10);
+
+		QAMain.myBukkit.runTaskLater(player, null, null, () -> {
+			try {
+				if (QAMain.isVersionHigherThan(1, 9)) {
+					player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
+				} else
+					player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
+			} catch (Error e) {
 				try {
-					if (QAMain.isVersionHigherThan(1, 9)) {
-						player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
-					} else
-						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
-				} catch (Error e) {
-					try {
-						player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
-					} catch (Error | Exception e43) {
-					}
+					player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+				} catch (Error | Exception e43) {
 				}
-				timeR.remove(player.getUniqueId());
 			}
-		}.runTaskLater(QAMain.getInstance(), (int)g.getDelayBetweenShotsInSeconds()*20);
+			timeR.remove(player.getUniqueId());
+		},(int)g.getDelayBetweenShotsInSeconds()*20);
+
+//		new BukkitRunnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					if (QAMain.isVersionHigherThan(1, 9)) {
+//						player.getWorld().playSound(player.getLocation(), g.getChargingSound(), 1, 1f);
+//					} else
+//						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 5, 1);
+//				} catch (Error e) {
+//					try {
+//						player.getWorld().playSound(player.getLocation(), Sound.valueOf("CLICK"), 5, 1);
+//					} catch (Error | Exception e43) {
+//					}
+//				}
+//				timeR.remove(player.getUniqueId());
+//			}
+//		}.runTaskLater(QAMain.getInstance(), (int)g.getDelayBetweenShotsInSeconds()*20);
 		return true;
 	}
 

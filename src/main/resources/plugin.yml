@@ -1,7 +1,8 @@
 main: me.zombie_striker.qg.QAMain
 version: ${project.version}
-api-version: 1.13
+api-version: 1.21
 name: QualityArmory
+folia-supported: true
 commands:
   QualityArmory:
     description: Main command for QA

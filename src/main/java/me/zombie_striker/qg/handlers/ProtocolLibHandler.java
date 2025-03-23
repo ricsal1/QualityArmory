@@ -13,7 +13,6 @@ import me.zombie_striker.qg.guns.Gun;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.*;
@@ -148,8 +147,8 @@ public class ProtocolLibHandler {
 							}
 
 							if(!XMaterial.supports(16))
-							new BukkitRunnable() {
-								public void run() {
+
+								QAMain.myBukkit.runTaskLater(null, null, null, () -> {
 									try {
 										PacketContainer pc2 = protocolManager
 												.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT);
@@ -179,10 +178,43 @@ public class ProtocolLibHandler {
 									} catch (Exception e) {
 										e.printStackTrace();
 									}
+								},1);
 
-
-								}
-							}.runTaskLater(QAMain.getInstance(), 1);
+//							new BukkitRunnable() {
+//								public void run() {
+//									try {
+//										PacketContainer pc2 = protocolManager
+//												.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT);
+//
+//										//EnumItemSlot e = EnumItemSlot.OFFHAND;
+//
+//										Object neededSlot = null;
+//										Object[] enums = slot.getClass().getEnumConstants();
+//										for (Object k : enums) {
+//											String name = (String) k.getClass().getMethod("name").invoke(k, new Class[0]);
+//											if (name.contains("OFFHAND")) {
+//												neededSlot = k;
+//												break;
+//											}
+//										}
+//										if(XMaterial.supports(16)){
+//											pc2.getModifier().write(0, id)
+//													.write(1, ironsights);
+//
+//										}else {
+//											pc2.getModifier().write(0, id)
+//													.write(1, neededSlot)
+//													.write(2, ironsights);
+//										}
+//
+//										protocolManager.sendServerPacket(event.getPlayer(), pc2);
+//									} catch (Exception e) {
+//										e.printStackTrace();
+//									}
+//
+//
+//								}
+//							}.runTaskLater(QAMain.getInstance(), 1);
 						}
 					}
 				});

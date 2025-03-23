@@ -9,7 +9,6 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
 public class ParticleHandlers {
@@ -30,12 +29,17 @@ public class ParticleHandlers {
 			if (Bukkit.getPluginManager().getPlugin("LightAPI") != null) {
 				final Location loc2 = loc;
 				LightAPI.get().setLightLevel(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 15);
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
-					}
-				}.runTaskLater(QAMain.getInstance(), 10);
+
+				QAMain.myBukkit.runTaskLater(null, loc2, null, () -> {
+					LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
+				},10);
+
+//				new BukkitRunnable() {
+//					@Override
+//					public void run() {
+//						LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 10);
 			}
 		} catch (Error | Exception e5) {
 		}
@@ -89,13 +93,18 @@ public class ParticleHandlers {
 			if (Bukkit.getPluginManager().getPlugin("LightAPI") != null) {
 				final Location loc2 = loc;
 				LightAPI.get().setLightLevel(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 15);
-				new BukkitRunnable() {
 
-					@Override
-					public void run() {
-						LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
-					}
-				}.runTaskLater(QAMain.getInstance(), 20);
+				QAMain.myBukkit.runTaskLater(null, loc2, null, () -> {
+					LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
+				},20);
+
+//				new BukkitRunnable() {
+//
+//					@Override
+//					public void run() {
+//						LightAPI.get().setLightLevel(loc2.getWorld().getName(), loc2.getBlockX(), loc2.getBlockY(), loc2.getBlockZ(), 0);
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 20);
 			}
 		} catch (Error | Exception e5) {
 		}
@@ -106,7 +115,7 @@ public class ParticleHandlers {
 			if (g.getParticle() != null)
 				if (g.getParticle() == XParticle.DUST.get()) {
 					spawnParticle(g.getParticleR(), g.getParticleG(), g.getParticleB(), loc);
-				} else if (g.getParticle() == XParticle.BLOCK.get() || g.getParticle() == Particle.BLOCK || g.getParticle() == Particle.FALLING_DUST) {
+				} else if (g.getParticle() == XParticle.BLOCK.get() ||  g.getParticle() == Particle.FALLING_DUST) {
 					loc.getWorld().spawnParticle(g.getParticle(), loc, 1, g.getParticleMaterial().createBlockData());
 				} else {
 					loc.getWorld().spawnParticle(g.getParticle(), loc, g.getParticleData());

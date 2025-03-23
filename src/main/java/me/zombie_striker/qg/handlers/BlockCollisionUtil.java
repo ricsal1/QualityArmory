@@ -33,10 +33,10 @@ public class BlockCollisionUtil {
 	public static double getHeight(Block b){
 		Material type = b.getType();
 		if (b.getType().name().contains("SLAB") || b.getType().name().contains("STEP")) {
-			if (b.getData() == 0)
+			//if (b.getData() == 0)
 				return 0.5;
-			if (b.getData() == 1)
-				return 1;
+//			if (b.getData() == 1)
+//				return 1;
 		}
 		if(customBlockHeights.containsKey(type))
 			return customBlockHeights.get(type);
@@ -70,9 +70,9 @@ public class BlockCollisionUtil {
 				return true;
 		}
 		if (b.getType().name().contains("SLAB") || b.getType().name().contains("STEP")) {
-			if (!QAMain.blockbullet_halfslabs && ((l.getY() - l.getBlockY() > 0.5 && b.getData() == 0)
-					|| (l.getY() - l.getBlockY() <= 0.5 && b.getData() == 1)))
-				return false;
+//			if (!QAMain.blockbullet_halfslabs && ((l.getY() - l.getBlockY() > 0.5 && b.getData() == 0)
+//					|| (l.getY() - l.getBlockY() <= 0.5 && b.getData() == 1)))
+//				return false;
 			return true;
 		}
 		if (b.getType().name().contains("BED_") || b.getType().name().contains("_BED")
@@ -93,25 +93,25 @@ public class BlockCollisionUtil {
 		}
 
 		if (b.getType().name().contains("STAIR")) {
-			if (b.getData() < 4 && (l.getY() - l.getBlockY() < 0.5))
+//			if (b.getData() < 4 && (l.getY() - l.getBlockY() < 0.5))
 				return true;
-			if (b.getData() >= 4 && (l.getY() - l.getBlockY() > 0.5))
-				return true;
-			switch (b.getData()) {
-				case 0:
-				case 4:
-					return l.getX() - (0.5 + l.getBlockX()) > 0;
-				case 1:
-				case 5:
-					return l.getX() - (0.5 + l.getBlockX()) < 0;
-				case 2:
-				case 6:
-					return l.getZ() - (0.5 + l.getBlockZ()) > 0;
-				case 3:
-				case 7:
-					return l.getZ() - (0.5 + l.getBlockZ()) < 0;
+//			if (b.getData() >= 4 && (l.getY() - l.getBlockY() > 0.5))
+//				return true;
+//			switch (b.getData()) {
+//				case 0:
+//				case 4:
+//					return l.getX() - (0.5 + l.getBlockX()) > 0;
+//				case 1:
+//				case 5:
+//					return l.getX() - (0.5 + l.getBlockX()) < 0;
+//				case 2:
+//				case 6:
+//					return l.getZ() - (0.5 + l.getBlockZ()) > 0;
+//				case 3:
+//				case 7:
+//					return l.getZ() - (0.5 + l.getBlockZ()) < 0;
 
-			}
+	//		}
 		}
 
 		if (b.getType().name().endsWith("FERN")) {

@@ -11,7 +11,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 
@@ -45,48 +44,90 @@ public class StickyGrenades extends Grenade {
 			holder.setHolder(arrow);
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
 			throwItems.put(holder.getHolder(),holder);
-			holder.setTimer(new BukkitRunnable(){
-				public void run(){
-					if(thrower.isSneaking()) {
-						if (holder.getHolder() instanceof Arrow) {
-							holder.getHolder().remove();
-						}
-						if (QAMain.enableExplosionDamage) {
-							QAThrowableExplodeEvent event = new QAThrowableExplodeEvent(StickyGrenades.this, holder.getHolder().getLocation());
-							Bukkit.getPluginManager().callEvent(event);
-							if (!event.isCancelled()) ExplosionHandler.handleExplosion(holder.getHolder().getLocation(), 3, 1);
-							QAMain.DEBUG("Using default explosions");
-						}
-						try {
-							holder.getHolder().getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(),
-									holder.getHolder().getLocation(), 0);
-							holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 8,
-									0.7f);
-						} catch (Error e3) {
-							holder.getHolder().getWorld().playEffect(holder.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
-							holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 8, 0.7f);
-						}
-						Player thro = Bukkit.getPlayer(holder.getOwner());
-						try {
-							for (Entity e : holder.getHolder().getNearbyEntities(radius, radius, radius)) {
-								if (e instanceof LivingEntity) {
-									double dam = (dmageLevel / e.getLocation().distance(holder.getHolder().getLocation()));
-									QAMain.DEBUG("Grenade-Damaging " + e.getName() + " : " + dam + " DAM.");
-									if (thro == null)
-										((LivingEntity) e).damage(dam);
-									else
-										((LivingEntity) e).damage(dam, thro);
-								}
-							}
-						} catch (Error e) {
-							holder.getHolder().getWorld().createExplosion(holder.getHolder().getLocation(), 1);
-							QAMain.DEBUG("Failed. Created default explosion");
-						}
-						throwItems.remove(holder.getHolder());
-						this.cancel();
+
+			holder.setTimer(QAMain.myBukkit.runTaskTimer(thrower, null, null, () -> {
+				if(thrower.isSneaking()) {
+					if (holder.getHolder() instanceof Arrow) {
+						holder.getHolder().remove();
 					}
+					if (QAMain.enableExplosionDamage) {
+						QAThrowableExplodeEvent event = new QAThrowableExplodeEvent(StickyGrenades.this, holder.getHolder().getLocation());
+						Bukkit.getPluginManager().callEvent(event);
+						if (!event.isCancelled()) ExplosionHandler.handleExplosion(holder.getHolder().getLocation(), 3, 1);
+						QAMain.DEBUG("Using default explosions");
+					}
+					try {
+						holder.getHolder().getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(),
+								holder.getHolder().getLocation(), 0);
+						holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 8,
+								0.7f);
+					} catch (Error e3) {
+						holder.getHolder().getWorld().playEffect(holder.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
+						holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 8, 0.7f);
+					}
+					Player thro = Bukkit.getPlayer(holder.getOwner());
+					try {
+						for (Entity e : holder.getHolder().getNearbyEntities(radius, radius, radius)) {
+							if (e instanceof LivingEntity) {
+								double dam = (dmageLevel / e.getLocation().distance(holder.getHolder().getLocation()));
+								QAMain.DEBUG("Grenade-Damaging " + e.getName() + " : " + dam + " DAM.");
+								if (thro == null)
+									((LivingEntity) e).damage(dam);
+								else
+									((LivingEntity) e).damage(dam, thro);
+							}
+						}
+					} catch (Error e) {
+						holder.getHolder().getWorld().createExplosion(holder.getHolder().getLocation(), 1);
+						QAMain.DEBUG("Failed. Created default explosion");
+					}
+					throwItems.remove(holder.getHolder());
+					QAMain.myBukkit.cancelTask(holder.getTask() );
 				}
-			}.runTaskTimer(QAMain.getInstance(),0,2));
+				},0,2));
+
+//			holder.setTimer(new BukkitRunnable(){
+//				public void run(){
+//					if(thrower.isSneaking()) {
+//						if (holder.getHolder() instanceof Arrow) {
+//							holder.getHolder().remove();
+//						}
+//						if (QAMain.enableExplosionDamage) {
+//							QAThrowableExplodeEvent event = new QAThrowableExplodeEvent(StickyGrenades.this, holder.getHolder().getLocation());
+//							Bukkit.getPluginManager().callEvent(event);
+//							if (!event.isCancelled()) ExplosionHandler.handleExplosion(holder.getHolder().getLocation(), 3, 1);
+//							QAMain.DEBUG("Using default explosions");
+//						}
+//						try {
+//							holder.getHolder().getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(),
+//									holder.getHolder().getLocation(), 0);
+//							holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 8,
+//									0.7f);
+//						} catch (Error e3) {
+//							holder.getHolder().getWorld().playEffect(holder.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
+//							holder.getHolder().getWorld().playSound(holder.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 8, 0.7f);
+//						}
+//						Player thro = Bukkit.getPlayer(holder.getOwner());
+//						try {
+//							for (Entity e : holder.getHolder().getNearbyEntities(radius, radius, radius)) {
+//								if (e instanceof LivingEntity) {
+//									double dam = (dmageLevel / e.getLocation().distance(holder.getHolder().getLocation()));
+//									QAMain.DEBUG("Grenade-Damaging " + e.getName() + " : " + dam + " DAM.");
+//									if (thro == null)
+//										((LivingEntity) e).damage(dam);
+//									else
+//										((LivingEntity) e).damage(dam, thro);
+//								}
+//							}
+//						} catch (Error e) {
+//							holder.getHolder().getWorld().createExplosion(holder.getHolder().getLocation(), 1);
+//							QAMain.DEBUG("Failed. Created default explosion");
+//						}
+//						throwItems.remove(holder.getHolder());
+//						this.cancel();
+//					}
+//				}
+//			}.runTaskTimer(QAMain.getInstance(),0,2));
 			//thrower.getWorld().playSound(thrower.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1, 1.5f);
 
 			QAMain.DEBUG("Throw grenade");

@@ -49,6 +49,7 @@ import me.zombie_striker.qg.npcs.Gunner;
 import me.zombie_striker.qg.npcs.GunnerTrait;
 import me.zombie_striker.qg.npcs_sentinel.SentinelQAHandler;
 import me.zombie_striker.qg.utils.LocalUtils;
+import me.zombie_striker.qg.utils.MyBukkit;
 import org.bukkit.*;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
@@ -67,7 +68,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -265,6 +265,7 @@ public class QAMain extends JavaPlugin {
     private FileConfiguration config;
     private File configFile;
     private boolean saveTheConfig = false;
+    public static MyBukkit myBukkit;
 
     public static QAMain getInstance() {
         return main;
@@ -647,6 +648,8 @@ public class QAMain extends JavaPlugin {
     @Override
     public void onEnable() {
         main = this;
+        myBukkit = new MyBukkit(this);
+
         if (!this.getDataFolder().exists()) {
             this.getDataFolder().mkdirs();
         }
@@ -693,13 +696,21 @@ public class QAMain extends JavaPlugin {
 
         DEBUG(ChatColor.RED + "NOTICE ME");
         reloadVals();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player player : Bukkit.getOnlinePlayers())
-                    resourcepackReq.add(player.getUniqueId());
-            }
-        }.runTaskLater(this, 1);
+
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            myBukkit.runTaskLater(player, null, null, () -> {
+                resourcepackReq.add(player.getUniqueId());
+            }, 1);
+        }
+
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                for (Player player : Bukkit.getOnlinePlayers())
+//                    resourcepackReq.add(player.getUniqueId());
+//            }
+//        }.runTaskLater(this, 1);
 
         // check if Citizens is present and enabled.
 
@@ -745,50 +756,86 @@ public class QAMain extends JavaPlugin {
         metrics.addCustomChart(
                 new Metrics.SimplePie("has_an_expansion_pack", () -> (expansionPacks.size() > 0) + ""));
         if (!CustomItemManager.isUsingCustomData()) {
-            new BukkitRunnable() {
-                @SuppressWarnings("deprecation")
-                public void run() {
-                    try {
-                        // Cheaty, hacky fix
-                        for (Player p : Bukkit.getOnlinePlayers()) {
-                            // if (p.getItemInHand().containsEnchantment(Enchantment.MENDING)) {
-                            if (p.getItemInHand() != null && p.getItemInHand().hasItemMeta())
-                                if (QualityArmory.isCustomItem(p.getItemInHand())) {
-                                    if (ITEM_enableUnbreakable && (!p.getItemInHand().getItemMeta().isUnbreakable()
-                                            && !ignoreUnbreaking)) {
-                                        ItemStack temp = p.getItemInHand();
-                                        int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
-                                        temp.setDurability((short) Math.max(0, j - 1));
-                                        temp = Gun.removeCalculatedExtra(temp);
-                                        p.setItemInHand(temp);
-                                    }
-                                }
-                            try {
 
-                                // if
-                                // (p.getInventory().getItemInOffHand().containsEnchantment(Enchantment.MENDING))
-                                // {
-                                if (p.getInventory().getItemInOffHand() != null
-                                        && p.getInventory().getItemInOffHand().hasItemMeta())
-                                    if (QualityArmory.isCustomItem(p.getInventory().getItemInOffHand())) {
-                                        if (ITEM_enableUnbreakable && (!p.getInventory().getItemInOffHand().getItemMeta()
-                                                .isUnbreakable() && !ignoreUnbreaking)) {
-                                            ItemStack temp = p.getInventory().getItemInOffHand();
-                                            int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
-                                            temp.setDurability((short) Math.max(0, j - 1));
-                                            temp = Gun.removeCalculatedExtra(temp);
-                                            p.getInventory().setItemInOffHand(temp);
-                                            return;
-                                        }
-                                    }
-                            } catch (Error | Exception e45) {
+
+            myBukkit.runTaskTimer(null, null, null, () -> {
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    // if (p.getItemInHand().containsEnchantment(Enchantment.MENDING)) {
+                    if (p.getItemInHand() != null && p.getItemInHand().hasItemMeta())
+                        if (QualityArmory.isCustomItem(p.getItemInHand())) {
+                            if (ITEM_enableUnbreakable && (!p.getItemInHand().getItemMeta().isUnbreakable()
+                                    && !ignoreUnbreaking)) {
+                                ItemStack temp = p.getItemInHand();
+                                int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+                                temp.setDurability((short) Math.max(0, j - 1));
+                                temp = Gun.removeCalculatedExtra(temp);
+                                p.setItemInHand(temp);
                             }
                         }
-                    } catch (Error | Exception catchy) {
-
+                    try {
+                        if (p.getInventory().getItemInOffHand() != null
+                                && p.getInventory().getItemInOffHand().hasItemMeta())
+                            if (QualityArmory.isCustomItem(p.getInventory().getItemInOffHand())) {
+                                if (ITEM_enableUnbreakable && (!p.getInventory().getItemInOffHand().getItemMeta()
+                                        .isUnbreakable() && !ignoreUnbreaking)) {
+                                    ItemStack temp = p.getInventory().getItemInOffHand();
+                                    int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+                                    temp.setDurability((short) Math.max(0, j - 1));
+                                    temp = Gun.removeCalculatedExtra(temp);
+                                    p.getInventory().setItemInOffHand(temp);
+                                    return;
+                                }
+                            }
+                    } catch (Error | Exception e45) {
                     }
                 }
-            }.runTaskTimer(this, 20, 15);
+            }, 20, 15);
+
+
+//            new BukkitRunnable() {
+//                @SuppressWarnings("deprecation")
+//                public void run() {
+//                    try {
+//                        // Cheaty, hacky fix
+//                        for (Player p : Bukkit.getOnlinePlayers()) {
+//                            // if (p.getItemInHand().containsEnchantment(Enchantment.MENDING)) {
+//                            if (p.getItemInHand() != null && p.getItemInHand().hasItemMeta())
+//                                if (QualityArmory.isCustomItem(p.getItemInHand())) {
+//                                    if (ITEM_enableUnbreakable && (!p.getItemInHand().getItemMeta().isUnbreakable()
+//                                            && !ignoreUnbreaking)) {
+//                                        ItemStack temp = p.getItemInHand();
+//                                        int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+//                                        temp.setDurability((short) Math.max(0, j - 1));
+//                                        temp = Gun.removeCalculatedExtra(temp);
+//                                        p.setItemInHand(temp);
+//                                    }
+//                                }
+//                            try {
+//
+//                                // if
+//                                // (p.getInventory().getItemInOffHand().containsEnchantment(Enchantment.MENDING))
+//                                // {
+//                                if (p.getInventory().getItemInOffHand() != null
+//                                        && p.getInventory().getItemInOffHand().hasItemMeta())
+//                                    if (QualityArmory.isCustomItem(p.getInventory().getItemInOffHand())) {
+//                                        if (ITEM_enableUnbreakable && (!p.getInventory().getItemInOffHand().getItemMeta()
+//                                                .isUnbreakable() && !ignoreUnbreaking)) {
+//                                            ItemStack temp = p.getInventory().getItemInOffHand();
+//                                            int j = QualityArmory.findSafeSpot(temp, false, overrideURL);
+//                                            temp.setDurability((short) Math.max(0, j - 1));
+//                                            temp = Gun.removeCalculatedExtra(temp);
+//                                            p.getInventory().setItemInOffHand(temp);
+//                                            return;
+//                                        }
+//                                    }
+//                            } catch (Error | Exception e45) {
+//                            }
+//                        }
+//                    } catch (Error | Exception catchy) {
+//
+//                    }
+//                }
+//            }.runTaskTimer(this, 20, 15);
         }
     }
 

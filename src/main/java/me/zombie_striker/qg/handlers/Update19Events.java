@@ -8,12 +8,10 @@ import me.zombie_striker.qg.guns.utils.GunUtil;
 
 import me.zombie_striker.qg.listener.QAListener;
 import org.bukkit.*;
-import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 
 public class Update19Events implements Listener {
 
@@ -41,16 +39,13 @@ public class Update19Events implements Listener {
 			if (QualityArmory.isIronSights(e.getOffHandItem())) {
 				e.setCancelled(true);
 				IronsightsHandler.unAim(e.getPlayer());
-				BukkitTask task = GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId());
-				if (task != null)
-					task.cancel();
-				return;
+                QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId()));
+                return;
+
 			} else if (QualityArmory.isGun(e.getMainHandItem())) {
 				e.setCancelled(true);
-				BukkitTask task = GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId());
-				if (task != null)
-					task.cancel();
-				return;
+                QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId()));
+                return;
 			}
 			Gun g = null;
 			if (QualityArmory.isIronSights(e.getOffHandItem())) {
@@ -64,10 +59,8 @@ public class Update19Events implements Listener {
 			if (g != null) {
 				e.setCancelled(true);
 				QAListener.reload(e.getPlayer(),g);
-				BukkitTask task = GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId());
-				if (task != null)
-					task.cancel();
-			}
+                QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId()));
+            }
 
 		} else {
 			Gun g = null;

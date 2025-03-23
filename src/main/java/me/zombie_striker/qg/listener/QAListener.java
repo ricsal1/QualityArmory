@@ -32,9 +32,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -143,17 +141,27 @@ public class QAListener implements Listener {
 									return;
 
 								IronsightsHandler.aim(e.getPlayer());
-								new BukkitRunnable() {
-									@Override
-									public void run() {
-										MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
-										MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
-										if (ms2 == ms1) {
-											e.getPlayer().getInventory().setItemInOffHand(null);
-											DEBUG("Item Duped. Got Rid of using offhand override (code=1)");
-										}
+
+								QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> {
+									MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
+									MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
+									if (ms2 == ms1) {
+										e.getPlayer().getInventory().setItemInOffHand(null);
+										DEBUG("Item Duped. Got Rid of using offhand override (code=1)");
 									}
-								}.runTaskLater(QAMain.getInstance(), 1);
+								},1);
+
+//								new BukkitRunnable() {
+//									@Override
+//									public void run() {
+//										MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
+//										MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
+//										if (ms2 == ms1) {
+//											e.getPlayer().getInventory().setItemInOffHand(null);
+//											DEBUG("Item Duped. Got Rid of using offhand override (code=1)");
+//										}
+//									}
+//								}.runTaskLater(QAMain.getInstance(), 1);
 							} catch (Error e2) {
 								Bukkit.broadcastMessage(QAMain.prefix
 										+ "Ironsights not compatible for versions lower than 1.8. The server owner should set EnableIronSights to false in the plugin's config");
@@ -162,19 +170,30 @@ public class QAListener implements Listener {
 					}
 				} else {
 					if (IronsightsHandler.isAiming(e.getPlayer())) {
-						new BukkitRunnable() {
 
-							@Override
-							public void run() {
-								MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
-								MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
+						QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> {
+							MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
+							MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
 
-								if (ms2 == ms1) {
-									e.getPlayer().getInventory().setItemInOffHand(null);
-									DEBUG("Item Duped. Got Rid of using offhand override (code=2)");
-								}
+							if (ms2 == ms1) {
+								e.getPlayer().getInventory().setItemInOffHand(null);
+								DEBUG("Item Duped. Got Rid of using offhand override (code=2)");
 							}
-						}.runTaskLater(QAMain.getInstance(), 5);
+						},5);
+
+//						new BukkitRunnable() {
+//
+//							@Override
+//							public void run() {
+//								MaterialStorage ms1 = MaterialStorage.getMS(e.getPlayer().getItemInHand());
+//								MaterialStorage ms2 = MaterialStorage.getMS(e.getPlayer().getInventory().getItemInOffHand());
+//
+//								if (ms2 == ms1) {
+//									e.getPlayer().getInventory().setItemInOffHand(null);
+//									DEBUG("Item Duped. Got Rid of using offhand override (code=2)");
+//								}
+//							}
+//						}.runTaskLater(QAMain.getInstance(), 5);
 
 						IronsightsHandler.unAim(e.getPlayer());
 						QAMain.DEBUG("Swap gun back to main hand");
@@ -219,13 +238,16 @@ public class QAListener implements Listener {
 				} else {
 					t = Gun.removeCalculatedExtra(hand);
 				}
-				new BukkitRunnable() {
 
-					@Override
-					public void run() {
-						e.getPlayer().setItemInHand(t);
-					}
-				}.runTaskLater(QAMain.getInstance(), 1);
+				QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> e.getPlayer().setItemInHand(t),1);
+
+//				new BukkitRunnable() {
+//
+//					@Override
+//					public void run() {
+//						e.getPlayer().setItemInHand(t);
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 1);
 
 			}
 	}
@@ -839,30 +861,51 @@ public class QAListener implements Listener {
 				}
 				final ItemStack temp2 = temp1;
 
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						if (origin.getDurability() != e.getPlayer().getItemInHand().getDurability()
-								&& slot == e.getPlayer().getInventory().getHeldItemSlot()
-								&& (e.getPlayer().getItemInHand() != null
-								&& e.getPlayer().getItemInHand().getType() == origin.getType())) {
-							try {
-								if (QualityArmory.isIronSights(e.getPlayer().getItemInHand())
-										&& origin.getDurability() == e.getPlayer().getInventory().getItemInOffHand()
-										.getDurability())
-									return;
-								if (temp2 != null
-										&& temp2.getDurability() == e.getPlayer().getItemInHand().getDurability())
-									return;
-							} catch (Error | Exception re54) {
-							}
-							e.getPlayer().setItemInHand(origin);
-							DEBUG("The item in the player's hand changed! Origin " + origin.getDurability() + " New "
-									+ e.getPlayer().getItemInHand().getDurability());
+				QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> {
+					if (origin.getDurability() != e.getPlayer().getItemInHand().getDurability()
+							&& slot == e.getPlayer().getInventory().getHeldItemSlot()
+							&& (e.getPlayer().getItemInHand() != null
+							&& e.getPlayer().getItemInHand().getType() == origin.getType())) {
+						try {
+							if (QualityArmory.isIronSights(e.getPlayer().getItemInHand())
+									&& origin.getDurability() == e.getPlayer().getInventory().getItemInOffHand()
+									.getDurability())
+								return;
+							if (temp2 != null
+									&& temp2.getDurability() == e.getPlayer().getItemInHand().getDurability())
+								return;
+						} catch (Error | Exception re54) {
 						}
-
+						e.getPlayer().setItemInHand(origin);
+						DEBUG("The item in the player's hand changed! Origin " + origin.getDurability() + " New "
+								+ e.getPlayer().getItemInHand().getDurability());
 					}
-				}.runTaskLater(QAMain.getInstance(), 0);
+				},0);
+
+//				new BukkitRunnable() {
+//					@Override
+//					public void run() {
+//						if (origin.getDurability() != e.getPlayer().getItemInHand().getDurability()
+//								&& slot == e.getPlayer().getInventory().getHeldItemSlot()
+//								&& (e.getPlayer().getItemInHand() != null
+//								&& e.getPlayer().getItemInHand().getType() == origin.getType())) {
+//							try {
+//								if (QualityArmory.isIronSights(e.getPlayer().getItemInHand())
+//										&& origin.getDurability() == e.getPlayer().getInventory().getItemInOffHand()
+//										.getDurability())
+//									return;
+//								if (temp2 != null
+//										&& temp2.getDurability() == e.getPlayer().getItemInHand().getDurability())
+//									return;
+//							} catch (Error | Exception re54) {
+//							}
+//							e.getPlayer().setItemInHand(origin);
+//							DEBUG("The item in the player's hand changed! Origin " + origin.getDurability() + " New "
+//									+ e.getPlayer().getItemInHand().getDurability());
+//						}
+//
+//					}
+//				}.runTaskLater(QAMain.getInstance(), 0);
 			}
 
 			ItemStack usedItem = IronsightsHandler.getItemAiming(e.getPlayer());
@@ -882,7 +925,8 @@ public class QAListener implements Listener {
 						Gun g = IronsightsHandler.getGunUsed(e.getPlayer());
 						QAMain.DEBUG("Swapping " + g.getName() + " from offhand to main hand to reload!");
 						if (GunUtil.rapidfireshooters.containsKey(e.getPlayer().getUniqueId()))
-							GunUtil.rapidfireshooters.remove(e.getPlayer().getUniqueId()).cancel();
+							QAMain.myBukkit.cancelTask(GunUtil.rapidfireshooters.get(e.getPlayer().getUniqueId()));
+
 						IronsightsHandler.unAim(e.getPlayer());
 						if (QAMain.enableIronSightsON_RIGHT_CLICK || !e.getPlayer().isSneaking()) {
 							QAMain.toggleNightvision(e.getPlayer(), g, false);
@@ -961,7 +1005,7 @@ public class QAListener implements Listener {
 		QAMain.resourcepackReq.remove(e.getPlayer().getUniqueId());
 		if (QAMain.reloadingTasks.containsKey(e.getPlayer().getUniqueId())) {
 			for (GunRefillerRunnable r : QAMain.reloadingTasks.get(e.getPlayer().getUniqueId())) {
-				r.getTask().cancel();
+				QAMain.myBukkit.cancelTask(r.getTask());
 			}
 		}
 		QAMain.reloadingTasks.remove(e.getPlayer().getUniqueId());
@@ -988,16 +1032,24 @@ public class QAListener implements Listener {
 			}
 		}
 		if (QAMain.addGlowEffects) {
-			new BukkitRunnable() {
 
-				@Override
-				public void run() {
-					if (e.getPlayer().getScoreboard() != null
-							&& !QAMain.coloredGunScoreboard.contains(e.getPlayer().getScoreboard())) {
-						QAMain.coloredGunScoreboard.add(QAMain.registerGlowTeams(e.getPlayer().getScoreboard()));
-					}
+			QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> {
+				if (e.getPlayer().getScoreboard() != null
+						&& !QAMain.coloredGunScoreboard.contains(e.getPlayer().getScoreboard())) {
+					QAMain.coloredGunScoreboard.add(QAMain.registerGlowTeams(e.getPlayer().getScoreboard()));
 				}
-			}.runTaskLater(QAMain.getInstance(), 20 * 15);
+			},20 * 15);
+
+//			new BukkitRunnable() {
+//
+//				@Override
+//				public void run() {
+//					if (e.getPlayer().getScoreboard() != null
+//							&& !QAMain.coloredGunScoreboard.contains(e.getPlayer().getScoreboard())) {
+//						QAMain.coloredGunScoreboard.add(QAMain.registerGlowTeams(e.getPlayer().getScoreboard()));
+//					}
+//				}
+//			}.runTaskLater(QAMain.getInstance(), 20 * 15);
 		}
 
 		if (QAMain.shouldSend && QAMain.sendOnJoin) {
@@ -1006,14 +1058,17 @@ public class QAListener implements Listener {
 			for (ItemStack i : e.getPlayer().getInventory().getContents()) {
 				if (i != null && (QualityArmory.isGun(i) || QualityArmory.isAmmo(i) || QualityArmory.isMisc(i))) {
 					if (QAMain.shouldSend && !QAMain.resourcepackReq.contains(e.getPlayer().getUniqueId())) {
-						new BukkitRunnable() {
 
-							@Override
-							public void run() {
-								QualityArmory.sendResourcepack(e.getPlayer(), false);
-							}
+						QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> 	QualityArmory.sendResourcepack(e.getPlayer(), false),0);
 
-						}.runTaskLater(QAMain.getInstance(), 0);
+//						new BukkitRunnable() {
+//
+//							@Override
+//							public void run() {
+//								QualityArmory.sendResourcepack(e.getPlayer(), false);
+//							}
+//
+//						}.runTaskLater(QAMain.getInstance(), 0);
 					}
 					break;
 				}
@@ -1111,13 +1166,19 @@ public class QAListener implements Listener {
 								e.setCancelled(true);
 
 								final Gun gk = g;
-								new BukkitRunnable() {
-									@Override
-									public void run() {
-										QAMain.DEBUG("Reloaded after one tick");
-										GunUtil.basicReload(gk, e.getPlayer(), gk.hasUnlimitedAmmo());
-									}
-								}.runTaskLater(QAMain.getInstance(), 1);
+
+								QAMain.myBukkit.runTaskLater(e.getPlayer(), null, null, () -> {
+									QAMain.DEBUG("Reloaded after one tick");
+									GunUtil.basicReload(gk, e.getPlayer(), gk.hasUnlimitedAmmo());
+								},1);
+
+//								new BukkitRunnable() {
+//									@Override
+//									public void run() {
+//										QAMain.DEBUG("Reloaded after one tick");
+//										GunUtil.basicReload(gk, e.getPlayer(), gk.hasUnlimitedAmmo());
+//									}
+//								}.runTaskLater(QAMain.getInstance(), 1);
 							}
 						}
 

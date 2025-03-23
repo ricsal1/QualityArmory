@@ -12,7 +12,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+
 
 import java.util.List;
 
@@ -34,12 +34,10 @@ public class Molotov extends Grenade {
 		}
 		thrower.getWorld().playSound(thrower.getLocation(), WeaponSounds.RELOAD_MAG_IN.getSoundName(), 2, 1);
 		final ThrowableHolder h = new ThrowableHolder(thrower.getUniqueId(), thrower, this);
-		h.setTimer(new BukkitRunnable() {
 
-			int k = 0;
+		final int[] k = {0};
 
-			@Override
-			public void run() {
+		h.setTimer(QAMain.myBukkit.runTaskTimer(thrower, null, null, () -> {
 				try {
 					for(int i = 0; i < 8; i++) {
 						double xoffset = ((Math.random() * 2) - 1)*radius;
@@ -58,30 +56,80 @@ public class Molotov extends Grenade {
 					h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
 					h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
 				}
-				if(!(h.getHolder() instanceof Player)&& (h.getHolder().isOnGround() || h.getHolder().isInWater())) k++;
+				if(!(h.getHolder() instanceof Player)&& (h.getHolder().isOnGround() || h.getHolder().isInWater())) k[0]++;
 				QAMain.DEBUG("Fireticks");
-				if (k == 40) {
+				if (k[0] == 40) {
 					if (h.getHolder() instanceof Item) {
 						Grenade.getGrenades().remove(h.getHolder());
 						h.getHolder().remove();
 					}
 					throwItems.remove(h.getHolder());
-					this.cancel();
+					QAMain.myBukkit.cancelTask(h.getTask() );
+
 				} else {
-					for(Entity e : h.getHolder().getNearbyEntities(radius, radius, radius)) 
-						if(e instanceof LivingEntity) {
-							QAMain.DEBUG("Firedamage to "+e.getName());
+					for(Entity e1 : h.getHolder().getNearbyEntities(radius, radius, radius))
+						if(e1 instanceof LivingEntity) {
+							QAMain.DEBUG("Firedamage to "+e1.getName());
 							try {
-								if (ProtectionHandler.canPvp(e.getLocation())) {
-									e.setFireTicks(20);
+								if (ProtectionHandler.canPvp(e1.getLocation())) {
+									e1.setFireTicks(20);
 								}
 							}catch (Error error){
-								e.setFireTicks(20);
+								e1.setFireTicks(20);
 							}
 						}
 				}
-			}
-		}.runTaskTimer(QAMain.getInstance(),5*20,10));
+				},5*20,10));
+
+
+//		h.setTimer(new BukkitRunnable() {
+//
+//			int k = 0;
+//
+//			@Override
+//			public void run() {
+//				try {
+//					for(int i = 0; i < 8; i++) {
+//						double xoffset = ((Math.random() * 2) - 1)*radius;
+//						double zoffset = ((Math.random() * 2) - 1)*radius;
+//						h.getHolder().getWorld().spawnParticle(Particle.FLAME,
+//								h.getHolder().getLocation().clone().add(xoffset,0,zoffset), 0);
+//					}
+//					for(int i = 0; i < 4; i ++) {
+//						//TODO: Check: This goes in three directions, and one stays still
+//						h.getHolder().getWorld().spawnParticle(org.bukkit.Particle.LAVA,
+//								h.getHolder().getLocation(), i);
+//					}
+//					h.getHolder().getWorld().playSound(h.getHolder().getLocation(), WeaponSounds.HISS.getSoundName(), 2f,
+//							1f);
+//				} catch (Error e3) {
+//					h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
+//					h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
+//				}
+//				if(!(h.getHolder() instanceof Player)&& (h.getHolder().isOnGround() || h.getHolder().isInWater())) k++;
+//				QAMain.DEBUG("Fireticks");
+//				if (k == 40) {
+//					if (h.getHolder() instanceof Item) {
+//						Grenade.getGrenades().remove(h.getHolder());
+//						h.getHolder().remove();
+//					}
+//					throwItems.remove(h.getHolder());
+//					this.cancel();
+//				} else {
+//					for(Entity e : h.getHolder().getNearbyEntities(radius, radius, radius))
+//						if(e instanceof LivingEntity) {
+//							QAMain.DEBUG("Firedamage to "+e.getName());
+//							try {
+//								if (ProtectionHandler.canPvp(e.getLocation())) {
+//									e.setFireTicks(20);
+//								}
+//							}catch (Error error){
+//								e.setFireTicks(20);
+//							}
+//						}
+//				}
+//			}
+//		}.runTaskTimer(QAMain.getInstance(),5*20,10));
 		throwItems.put(thrower, h);
 
 		return true;

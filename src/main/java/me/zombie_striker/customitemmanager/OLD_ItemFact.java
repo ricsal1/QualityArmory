@@ -6,11 +6,9 @@ import me.zombie_striker.qg.armor.ArmorObject;
 import me.zombie_striker.qg.guns.Gun;
 import me.zombie_striker.qg.handlers.IronsightsHandler;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +27,16 @@ public class OLD_ItemFact {
 		im.setDisplayName(g.getDisplayName() + QAMain.S_OUT_OF_AMMO);
 		k.setItemMeta(im);
 		player.getInventory().setItem(slot, k);
-		new BukkitRunnable() {
-			public void run() {
-				removeOutOfAmmoToDisplayname(g, player, k, slot);
-			}
-		}.runTaskLater(QAMain.getInstance(), 20 * 3);
+
+		QAMain.myBukkit.runTaskLater(player, null, null, () -> {
+			removeOutOfAmmoToDisplayname(g, player, k, slot);
+		},20 * 3);
+
+//		new BukkitRunnable() {
+//			public void run() {
+//				removeOutOfAmmoToDisplayname(g, player, k, slot);
+//			}
+//		}.runTaskLater(QAMain.getInstance(), 20 * 3);
 	}
 
 	public static void removeOutOfAmmoToDisplayname(final Gun g, final Player player, ItemStack is, final int slot) {

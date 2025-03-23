@@ -13,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.zombie_striker.qg.QAMain;
 import me.zombie_striker.customitemmanager.MaterialStorage;
@@ -36,37 +35,37 @@ public class SmokeGrenades extends Grenade {
 		}
 		thrower.getWorld().playSound(thrower.getLocation(), WeaponSounds.RELOAD_MAG_IN.getSoundName(), 2, 1);
 		final ThrowableHolder h = new ThrowableHolder(thrower.getUniqueId(), thrower, this);
-		h.setTimer(new BukkitRunnable() {
 
-			int k = 0;
+		final int[] k = {0};
 
-			@Override
-			public void run() {
+		h.setTimer(QAMain.myBukkit.runTaskTimer(thrower, null, null, () -> {
+
 				try {
 					h.getHolder().getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(),
 							h.getHolder().getLocation(), 0);
-					if (k % 2 == 0)
+					if (k[0] % 2 == 0)
 						h.getHolder().getWorld().playSound(h.getHolder().getLocation(),
 								WeaponSounds.HISS.getSoundName(), 2f, 1f);
 				} catch (Error e3) {
 					h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
 					h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
 				}
-				k++;
-				if (k == 1) {
+				k[0]++;
+				if (k[0] == 1) {
 					if (h.getHolder() instanceof Player) {
 						QAMain.DEBUG("Blinded player");
 						((LivingEntity) h.getHolder())
 								.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 2));
 						removeGrenade(((Player) h.getHolder()));
 					}
-				} else if (k == 80) {
+				} else if (k[0] == 80) {
 					if (h.getHolder() instanceof Item) {
 						Grenade.getGrenades().remove(h.getHolder());
 						h.getHolder().remove();
 					}
 					throwItems.remove(h.getHolder());
-					this.cancel();
+					QAMain.myBukkit.cancelTask(h.getTask() );
+
 				} else {
 					for(Entity e : h.getHolder().getNearbyEntities(radius, radius, radius))
 						if(e instanceof LivingEntity) {
@@ -80,8 +79,54 @@ public class SmokeGrenades extends Grenade {
 							}
 						}
 				}
-			}
-		}.runTaskTimer(QAMain.getInstance(), 5 * 20, 5));
+				}, 5 * 20, 5));
+
+//		h.setTimer(new BukkitRunnable() {
+//
+//			int k = 0;
+//
+//			@Override
+//			public void run() {
+//				try {
+//					h.getHolder().getWorld().spawnParticle(XParticle.EXPLOSION_EMITTER.get(),
+//							h.getHolder().getLocation(), 0);
+//					if (k % 2 == 0)
+//						h.getHolder().getWorld().playSound(h.getHolder().getLocation(),
+//								WeaponSounds.HISS.getSoundName(), 2f, 1f);
+//				} catch (Error e3) {
+//					h.getHolder().getWorld().playEffect(h.getHolder().getLocation(), Effect.valueOf("CLOUD"), 0);
+//					h.getHolder().getWorld().playSound(h.getHolder().getLocation(), Sound.valueOf("EXPLODE"), 3, 0.7f);
+//				}
+//				k++;
+//				if (k == 1) {
+//					if (h.getHolder() instanceof Player) {
+//						QAMain.DEBUG("Blinded player");
+//						((LivingEntity) h.getHolder())
+//								.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 2));
+//						removeGrenade(((Player) h.getHolder()));
+//					}
+//				} else if (k == 80) {
+//					if (h.getHolder() instanceof Item) {
+//						Grenade.getGrenades().remove(h.getHolder());
+//						h.getHolder().remove();
+//					}
+//					throwItems.remove(h.getHolder());
+//					this.cancel();
+//				} else {
+//					for(Entity e : h.getHolder().getNearbyEntities(radius, radius, radius))
+//						if(e instanceof LivingEntity) {
+//							QAMain.DEBUG("Blinding to "+e.getName());
+//							try {
+//								if (ProtectionHandler.canPvp(e.getLocation())) {
+//									((LivingEntity) e).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 2));
+//								}
+//							}catch (Error error){
+//								((LivingEntity) e).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 2));
+//							}
+//						}
+//				}
+//			}
+//		}.runTaskTimer(QAMain.getInstance(), 5 * 20, 5));
 		throwItems.put(thrower, h);
 		return true;
 
