@@ -967,7 +967,10 @@ public class GunUtil {
 			highRecoilCounter.remove(player.getUniqueId());
 		Vector temp = player.getVelocity();
 		// player.getLocation().setDirection(vector);
-		player.teleport(current);
+
+		QAMain.myBukkit.playerTeleport(player,current);
+
+		//player.teleport(current);
 		player.setVelocity(temp);
 	}
 
