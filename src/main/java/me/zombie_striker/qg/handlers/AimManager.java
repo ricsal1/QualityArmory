@@ -29,9 +29,9 @@ public class AimManager extends BukkitRunnable implements Listener {
 	}
 	
 	public AimManager() {
-        QAMain.myBukkit.runTaskTimer(null, null, null, () -> QAMain.getInstance(), 10, 10);
+     QAMain.myBukkit.runTaskTimer(null, null, null, () -> run(), 10, 10);
 
-//        this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
+     //  this.runTaskTimerAsynchronously(QAMain.getInstance(), 10, 10);
 	}
 
 	@Override
@@ -48,6 +48,8 @@ public class AimManager extends BukkitRunnable implements Listener {
 				if (XReflection.supports(9) && !QualityArmory.isIronSights(p.getInventory().getItemInMainHand())) {
 					sway *= g.getSwayUnscopedMultiplier();
 				}
+
+//				System.out.println(g.getName() + "    " + sway + "    " +p.isSprinting() + "     " +p.isSneaking() + "     " +QualityArmory.isIronSights(p.getInventory().getItemInMainHand()) + "    " +XReflection.supports(9));
 			}
 
 			if (LAST_MOVEMENT.containsKey(p.getUniqueId())) {
@@ -57,8 +59,10 @@ public class AimManager extends BukkitRunnable implements Listener {
 					s = 1;
 				if (s < 800) {
 					// less than 1.5 sec
-					if (g==null || g.isEnableSwayMovementModifier())
+					if (g==null || g.isEnableSwayMovementModifier()) {
 						sway *= Math.min(QAMain.swayModifier_Walk, 800 / s);
+//						System.out.println( "  Walk??  " + sway );
+					}
 				}
 			}
 
