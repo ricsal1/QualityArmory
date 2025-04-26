@@ -13,7 +13,6 @@ import me.zombie_striker.qg.guns.Gun;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.*;
@@ -148,8 +147,8 @@ public class ProtocolLibHandler {
 							}
 
 							if(!XMaterial.supports(16))
-							new BukkitRunnable() {
-								public void run() {
+
+								QAMain.myBukkit.runTaskLater(null, null, null, () -> {
 									try {
 										PacketContainer pc2 = protocolManager
 												.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT);
@@ -179,10 +178,7 @@ public class ProtocolLibHandler {
 									} catch (Exception e) {
 										e.printStackTrace();
 									}
-
-
-								}
-							}.runTaskLater(QAMain.getInstance(), 1);
+								},1);
 						}
 					}
 				});
