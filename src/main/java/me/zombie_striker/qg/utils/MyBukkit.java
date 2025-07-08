@@ -78,6 +78,8 @@ public class MyBukkit {
 
 
     public void cancelTask(Object task) {
+        if (task == null) return;
+
         if (folia)
             ((ScheduledTask) task).cancel();
         else
@@ -86,6 +88,8 @@ public class MyBukkit {
 
 
     public boolean isCancelled(Object task) {
+        if (task == null) return true;
+
         if (folia)
             return ((ScheduledTask) task).isCancelled();
         else
